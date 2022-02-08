@@ -5,27 +5,34 @@
     <title>Spatial Span Game</title>
     <link rel="icon" type="image/x-icon" href="./src/favicon/chat.png">
     <link rel='stylesheet' href="./style/main.css">
+    <script type="module" src="./js/sha256.js"></script>
     <script type="text/javascript" src="./js/main.js"></script>
 </header>
 
 <main>
-    <div class="Probe" id='Probe1' onclick="FlashProbe(this)">
-        1
+    <div id = "testCanvas" class = "testCanvas">
+        <div class="Probe" id='Probe1' onclick="FlashProbe(this)">
+            1
+        </div>
+        <div class="Probe" id='Probe2'>
+            2
+        </div>
+        <div class="Probe" id='Probe3'>
+            3
+        </div>
+        <div class="Probe" id='Probe4'>
+            4
+        </div>
+        <div class="Probe" id='Probe5'>
+            5
+        </div>
+        <div class="Probe" id='Probe6'>
+            6
+        </div>
     </div>
-    <div class="Probe" id='Probe2'>
-        2
+    <div id = "welcomeCanvas" class = "instructionCanvas">
     </div>
-    <div class="Probe" id='Probe3'>
-        3
-    </div>
-    <div class="Probe" id='Probe4'>
-        4
-    </div>
-    <div class="Probe" id='Probe5'>
-        5
-    </div>
-    <div class="Probe" id='Probe6'>
-        6
+    <div id = "instructionCanvas" class = 'instructionCanvas'>
     </div>
 </main>
 

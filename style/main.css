@@ -33,11 +33,11 @@ main {
     padding: 10px;
     vertical-align: middle;
     text-align: center;
-    border: 10px solid crimson;
+    border: 3px solid yellowgreen;
 }
 
 .Probe:hover {
-    background-color: yellow;
+    border-color: white;
 }
 
 .Probe-selected {
@@ -51,11 +51,7 @@ main {
     padding: 10px;
     vertical-align: middle;
     text-align: center;
-    border: 10px solid crimson;
-}
-
-.Probe-selected:hover {
-    background-color: yellow;
+    border: 3px solid crimson;
 }
 
 footer>a {
