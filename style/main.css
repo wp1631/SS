@@ -1,0 +1,79 @@
+html {
+    background-color: darkgray;
+}
+
+title {
+    display: block;
+    vertical-align: middle;
+    text-align: center;
+    height: 2em;
+    font-size: 50px;
+}
+
+header {
+    margin-top: 10px;
+}
+
+main {
+    /*background-color: navajowhite;*/
+    display: block;
+    justify-content: center;
+    width: 90vw;
+    height: 80vw;
+}
+
+.Probe {
+    --base-unit: 70px;
+    display: flexbox;
+    width: var(--base-unit);
+    line-height: var(--base-unit);
+    height: var(--base-unit);
+    border-radius: 50%;
+    background-color: aliceblue;
+    padding: 10px;
+    vertical-align: middle;
+    text-align: center;
+    border: 10px solid crimson;
+}
+
+.Probe:hover {
+    background-color: yellow;
+}
+
+.Probe-selected {
+    --base-unit: 70px;
+    background-color: red;
+    display: flexbox;
+    width: var(--base-unit);
+    line-height: var(--base-unit);
+    height: var(--base-unit);
+    border-radius: 50%;
+    padding: 10px;
+    vertical-align: middle;
+    text-align: center;
+    border: 10px solid crimson;
+}
+
+.Probe-selected:hover {
+    background-color: yellow;
+}
+
+footer>a {
+    font-style: normal;
+    text-decoration: none;
+    color: black;
+    display: flexbox;
+    line-height: 1.5em;
+    padding: 2px;
+    background-color: beige;
+    border: 1px solid black;
+}
+
+footer>a:hover {
+    background-color: burlywood;
+}
+
+footer {
+    position: fixed;
+    bottom: 2em;
+}
