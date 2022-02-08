@@ -6,11 +6,17 @@
     <link rel="icon" type="image/x-icon" href="./src/favicon/chat.png">
     <link rel='stylesheet' href="./src/style/main.css">
     <script type="text/javascript" src="./src/js/main.js"></script>
-    <script type="module" src="./src/js/sha256.js"></script>
+    <script type="text/javascript" src="./src/js/sha256.js"></script>
 </header>
 
 <main>
-    <div id = "testCanvas" class = "testCanvas">
+    <div id = "welcomeCanvas" class = "instructionCanvas">
+        <h1>Welocome</h1>
+        <p>
+            Helooooooasdoasodsadsakdl;ksa;ldkas;lkd;lsakdl;sadsajhfjasbfhdjsbcvhsdbcseybcyesbghcuysebfjdhbfdhjsbcjh
+        </p>
+    </div>
+    <div id = "testCanvas" class = "testCanvas" hidden>
         <div class="Probe" id='Probe1' onclick="FlashProbe(this)">
             1
         </div>
@@ -30,9 +36,7 @@
             6
         </div>
     </div>
-    <div id = "welcomeCanvas" class = "instructionCanvas">
-    </div>
-    <div id = "instructionCanvas" class = 'instructionCanvas'>
+    <div id = "instructionCanvas" class = 'instructionCanvas' hidden>
     </div>
 </main>
 

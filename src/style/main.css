@@ -3,14 +3,15 @@ html {
 }
 
 title {
-    display: block;
-    vertical-align: middle;
+    display: grid;
     text-align: center;
     height: 2em;
     font-size: 50px;
+    margin: 0 auto;
 }
 
 header {
+    display: block;
     margin-top: 10px;
 }
 
@@ -18,8 +19,23 @@ main {
     /*background-color: navajowhite;*/
     display: block;
     justify-content: center;
+    align-items: center;
     width: 90vw;
-    height: 80vw;
+    height: 40vw;
+}
+
+.instructionCanvas {
+    display: flexbox;
+    position: relative;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    width: 75%;
+    height: 85%;
+    margin: 5%;
+    border: 10px solid red;
+    background-color: bisque;
+    margin: 0 auto;
 }
 
 .Probe {
@@ -41,6 +57,20 @@ main {
 }
 
 .Probe-selected {
+    --base-unit: 70px;
+    background-color: red;
+    display: flexbox;
+    width: var(--base-unit);
+    line-height: var(--base-unit);
+    height: var(--base-unit);
+    border-radius: 50%;
+    padding: 10px;
+    vertical-align: middle;
+    text-align: center;
+    border: 3px solid crimson;
+}
+
+.Probe-flashing {
     --base-unit: 70px;
     background-color: red;
     display: flexbox;

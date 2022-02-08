@@ -1,40 +1,67 @@
-import { sha256 } from "./sha256";
-
 var params = {
-    trialParam: {
+    trialParam : {
         seqLength: 3,
         sequences: [],
         answersequences : [],
         span : "",
+        correct : [],
     },
-    trialController: {
+    trialController : {
         timestart : 0,
         playable : false,
         stagnation : false,
         consecutivecorrect : 0,
+        maxTrial : 40,
+        mode : 'no-switch',
     },
-    identifiers = {
+    identifiers : {
         fname : "",
         mname : "",
         lname : "",
         code : "",
+        date : "",
+        timestart : null,
     }
 }
 
-function SelectProbe(probeID) {
-    probeRef = object;
-    probeRef.setAttribute('class', 'Probe-selected');
+const defaultColorFlashDef = {
+    bgcolor : "green",
+    bdcolor: "pink",
 }
 
-function FlashProbe(object) {
+function SelectProbe(object) {
     probeRef = object;
-    probeRef.setAttribute('class', 'Probe-selected');
     setTimeout(function() { probeRef.setAttribute('class', 'Probe'); }, 300)
+    //do after selected
 }
 
-function ClickProbe(object) {
+function FlashProbe(object, colorflashdef=defaultColorFlashDef, timeout = 250) {
+    var probeRef = object;
+
+    probeRef.style.borderColor = colorflashdef.bdcolor;
+    probeRef.style.backgroundColor = colorflashdef.bgcolor;
+    setTimeout(function() { 
+        probeRef.style.borderColor = null;
+        probeRef.style.backgroundColor = null;
+    }, timeout)
+}
+
+function prelude(){
+    
+}
+
+function setInstruction() {
 
 }
+
+function setDemoMode() {
+
+}
+
+function setPlayMode() {
+    document.getElementById("testCanvas").hidden = false;
+    //Add evenet listener to all probe
+} 
 
 function InitiateTrial(numTrial, TrialCueData) {
     //Display all cue

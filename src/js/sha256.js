@@ -3,7 +3,7 @@
  * https://github.com/geraintluff/sha256/blob/gh-pages/sha256.js
  **/
 
-export function sha256(ascii) {
+function sha256(ascii) {
 	function rightRotate(value, amount) {
 		return (value>>>amount) | (value<<(32 - amount));
 	};
