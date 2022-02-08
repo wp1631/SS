@@ -25,13 +25,13 @@ var params = {
 }
 
 const defaultColorFlashDef = {
-    bgcolor : "green",
-    bdcolor: "pink",
+    bgcolor : "red",
+    bdcolor: "white",
 }
 
 function SelectProbe(object) {
     probeRef = object;
-    setTimeout(function() { probeRef.setAttribute('class', 'Probe'); }, 300)
+    //do upon being selected
     //do after selected
 }
 
@@ -40,6 +40,7 @@ function FlashProbe(object, colorflashdef=defaultColorFlashDef, timeout = 250) {
 
     probeRef.style.borderColor = colorflashdef.bdcolor;
     probeRef.style.backgroundColor = colorflashdef.bgcolor;
+    
     setTimeout(function() { 
         probeRef.style.borderColor = null;
         probeRef.style.backgroundColor = null;
@@ -59,8 +60,8 @@ function setDemoMode() {
 }
 
 function setPlayMode() {
+    document.getElementById("welcomeCanvas").hidden = true;
     document.getElementById("testCanvas").hidden = false;
-    //Add evenet listener to all probe
 } 
 
 function InitiateTrial(numTrial, TrialCueData) {
