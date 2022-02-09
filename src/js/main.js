@@ -25,7 +25,7 @@ var params = {
 }
 
 const defaultColorFlashDef = {
-    bgcolor : "red",
+    bgcolor : "yellow",
     bdcolor: "white",
 }
 
@@ -57,12 +57,17 @@ function prelude(){
     
 }
 
-function setInstruction() {
-
+function sequenceFlash(seq, colorflashdef=defaultColorFlashDef, timeout = 250, ISI = 1000) {
+    var waittime = ISI - timeout;
+    for (var i = 0; i < seq.length; i++) {
+        setTimeout(() => {
+            FlashProbe(document.getElementById("Probe"+seq[i]),colorflashdef,timeout);
+    }
 }
 
 function setDemoMode() {
-
+    document.getElementById("welcomeCanvas").hidden = true;
+    document.getElementById("testCanvas").hidden = false;
 }
 
 function setPlayMode() {
@@ -73,7 +78,7 @@ function setPlayMode() {
         var temp =  document.getElementById("Probe"+i)
         temp.addEventListener("click", EventFunctions.forProbeFlash)
     }
-} 
+}
 
 function InitiateTrial(numTrial, TrialCueData) {
     //Display all cue
