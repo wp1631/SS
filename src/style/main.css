@@ -4,6 +4,9 @@
     --probe-span-radius : 200px;
     --cos30 : 0.86602540378;
     --sin30 : 0.5;
+    --crosshair-color : black;
+    --crosshair-length : 40px;
+    --crosshair-width : 5px;
 }
 
 html {
@@ -72,6 +75,8 @@ main {
     vertical-align: middle;
     text-align: center;
     border: 3px solid yellowgreen;
+    margin: 0;
+    padding: 0;
 }
 
 #Probe1 {
@@ -131,6 +136,27 @@ main {
     vertical-align: middle;
     text-align: center;
     border: 3px solid crimson;
+}
+
+.Crosshair {
+    position: absolute;
+    margin:0;
+    padding:0;
+    background-color: var(--crosshair-color);
+}
+
+#Crosshair1 {
+    width: var(--crosshair-length);
+    height: var(--crosshair-width);
+    left: calc(50% - var(--crosshair-length)/2.0);
+    top: calc(50% - var(--crosshair-width)/2.0);
+}
+
+#Crosshair2 {
+    height: var(--crosshair-length);
+    width: var(--crosshair-width);
+    top: calc(50% - var(--crosshair-length)/2.0);
+    left: calc(50% - var(--crosshair-width)/2.0);
 }
 
 footer>a {
