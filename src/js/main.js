@@ -62,6 +62,7 @@ function sequenceFlash(seq, colorflashdef=defaultColorFlashDef, timeout = 250, I
     for (var i = 0; i < seq.length; i++) {
         setTimeout(() => {
             FlashProbe(document.getElementById("Probe"+seq[i]),colorflashdef,timeout);
+        },waittime);
     }
 }
 
