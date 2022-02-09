@@ -29,6 +29,12 @@ const defaultColorFlashDef = {
     bdcolor: "white",
 }
 
+var EventFunctions = {
+    forProbeFlash: function (e) {
+        FlashProbe(e.target);
+    }
+}
+
 function SelectProbe(object) {
     probeRef = object;
     //do upon being selected
@@ -62,6 +68,11 @@ function setDemoMode() {
 function setPlayMode() {
     document.getElementById("welcomeCanvas").hidden = true;
     document.getElementById("testCanvas").hidden = false;
+    for (var i = 1; i < 7; i++ )
+    {
+        var temp =  document.getElementById("Probe"+i)
+        temp.addEventListener("click", EventFunctions.forProbeFlash)
+    }
 } 
 
 function InitiateTrial(numTrial, TrialCueData) {
