@@ -1,37 +1,47 @@
 var params = {
-    trialParam : {
+    trialParam: {
         seqLength: 3,
         sequences: [],
-        answersequences : [],
-        span : "",
-        correct : [],
+        answersequences: [],
+        span: "",
+        correct: [],
     },
-    trialController : {
-        timestart : 0,
-        playable : false,
-        stagnation : false,
-        consecutivecorrect : 0,
-        maxTrial : 40,
-        mode : 'no-switch',
+    trialController: {
+        timestart: 0,
+        playable: false,
+        stagnation: false,
+        consecutivecorrect: 0,
+        maxTrial: 40,
+        mode: 'no-switch',
     },
-    identifiers : {
-        fname : "",
-        mname : "",
-        lname : "",
-        code : "",
-        date : "",
-        timestart : null,
+    identifiers: {
+        fname: "",
+        mname: "",
+        lname: "",
+        code: "",
+        date: "",
+        timestart: null,
     }
 }
 
 const defaultColorFlashDef = {
-    bgcolor : "yellow",
+    bgcolor: "yellow",
     bdcolor: "white",
 }
 
+const defaultColorHoverDef = {
+    bordercolor: "white",
+}
+
+const defaultTimeout = 250;
+
+
 var EventFunctions = {
-    forProbeFlash: function (e) {
+    forProbeFlash: function(e) {
         FlashProbe(e.target);
+    },
+    forProbeHover: function(e) {
+
     }
 }
 
@@ -41,28 +51,29 @@ function SelectProbe(object) {
     //do after selected
 }
 
-function FlashProbe(object, colorflashdef=defaultColorFlashDef, timeout = 250) {
+function FlashProbe(object, colorflashdef = defaultColorFlashDef, timeout = defaultTimeout) {
     var probeRef = object;
 
     probeRef.style.borderColor = colorflashdef.bdcolor;
     probeRef.style.backgroundColor = colorflashdef.bgcolor;
-    
-    setTimeout(function() { 
+
+    setTimeout(function() {
         probeRef.style.borderColor = null;
         probeRef.style.backgroundColor = null;
     }, timeout)
 }
 
-function prelude(){
-    
+function prelude() {
+
 }
 
-function sequenceFlash(seq, colorflashdef=defaultColorFlashDef, timeout = 250, ISI = 1000) {
-    var waittime = ISI - timeout;
-    for (var i = 0; i < seq.length; i++) {
-        setTimeout(() => {
-            FlashProbe(document.getElementById("Probe"+seq[i]),colorflashdef,timeout);
-        },waittime);
+function sequenceFlash(seq, colorflashdef = defaultColorFlashDef, timeout = defaultTimeout, ISI = 1000, mode = 'const-interval') {
+    switch (mode) {
+        case "const-interval":
+            let waittime = ISI - timeout;
+            for (let i = 0; i < seq.length; i++) {
+                setTimeout(() => { FlashProbe(document.getElementById("Probe" + seq[i]), colorflashdef, timeout); }, i * ISI + waittime);
+            }
     }
 }
 
@@ -71,13 +82,15 @@ function setDemoMode() {
     document.getElementById("testCanvas").hidden = false;
 }
 
-function setPlayMode() {
+function setPlayMode(mode = "on") {
     document.getElementById("welcomeCanvas").hidden = true;
     document.getElementById("testCanvas").hidden = false;
-    for (var i = 1; i < 7; i++ )
-    {
-        var temp =  document.getElementById("Probe"+i)
-        temp.addEventListener("click", EventFunctions.forProbeFlash)
+    switch (mode) {
+        case "on":
+            for (let i = 1; i < 7; i++) {
+                var temp = document.getElementById("Probe" + i)
+                temp.addEventListener("click", EventFunctions.forProbeFlash)
+            }
     }
 }
 
