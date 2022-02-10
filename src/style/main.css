@@ -1,16 +1,16 @@
-
 :root {
-    --probe-base-unit : 120px;
-    --probe-span-radius : 200px;
-    --cos30 : 0.86602540378;
-    --sin30 : 0.5;
-    --crosshair-color : black;
-    --crosshair-length : 40px;
-    --crosshair-width : 5px;
+    --probe-base-unit: 120px;
+    --probe-span-radius: 200px;
+    --cos30: 0.86602540378;
+    --sin30: 0.5;
+    --crosshair-color: black;
+    --crosshair-length: 40px;
+    --crosshair-width: 5px;
+    --main-bg-color: rgb(126, 126, 126);
 }
 
 html {
-    background-color: darkgray;
+    background-color: var(--main-bg-color);
 }
 
 title {
@@ -45,7 +45,7 @@ main {
     align-items: center;
     width: 75%;
     height: 85%;
-    margin: 0 5% ;
+    margin: 0 5%;
     border: 10px solid red;
     background-color: bisque;
     margin: 0 auto;
@@ -71,12 +71,42 @@ main {
     height: var(--probe-base-unit);
     border-radius: 50%;
     background-color: aliceblue;
-    padding: 10px;
-    vertical-align: middle;
     text-align: center;
     border: 3px solid yellowgreen;
     margin: 0;
     padding: 0;
+}
+
+.Probe:hover {
+    border-color: white;
+}
+
+.Probe-flashing-forward {
+    background-color: yellowgreen;
+    position: absolute;
+    display: block;
+    width: var(--probe-base-unit);
+    line-height: var(--probe-base-unit);
+    height: var(--probe-base-unit);
+    border-radius: 50%;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    border: 3px solid white;
+}
+
+.Probe-flashing-backward {
+    background-color: yellowgreen;
+    display: block;
+    width: var(--probe-base-unit);
+    line-height: var(--probe-base-unit);
+    height: var(--probe-base-unit);
+    border-radius: 50%;
+    padding: 0;
+    margin: 0;
+    vertical-align: middle;
+    text-align: center;
+    border: 3px solid white;
 }
 
 #Probe1 {
@@ -109,30 +139,14 @@ main {
     top: calc(50% - var(--probe-span-radius)*var(--sin30) - var(--probe-base-unit)/2.0);
 }
 
-.Probe:hover {
-    border-color: white;
-}
-
 .Probe-selected {
     background-color: red;
     width: var(--probe-base-unit);
     line-height: var(--probe-base-unit);
     height: var(--probe-base-unit);
     border-radius: 50%;
-    padding: 10px;
-    vertical-align: middle;
-    text-align: center;
-    border: 3px solid crimson;
-}
-
-.Probe-flashing {
-    background-color: red;
-    display: flexbox;
-    width: var(--probe-base-unit);
-    line-height: var(--probe-base-unit);
-    height: var(--probe-base-unit);
-    border-radius: 50%;
-    padding: 10px;
+    padding: 0;
+    margin: 0;
     vertical-align: middle;
     text-align: center;
     border: 3px solid crimson;
@@ -140,8 +154,8 @@ main {
 
 .Crosshair {
     position: absolute;
-    margin:0;
-    padding:0;
+    margin: 0;
+    padding: 0;
     background-color: var(--crosshair-color);
 }
 
