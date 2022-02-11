@@ -1,5 +1,3 @@
-import sha256 from "./sha256 "
-
 var DynamicsContainer = {
     trialParam: {
         seqLength: null,
@@ -12,8 +10,8 @@ var DynamicsContainer = {
         seqLength: 3,
         timestart: 0,
         span: "",
-        stagnation: false,
         consecutivecorrect: 0,
+        consecutiveSpancorrect: 0,
         maxTrial: 40,
         testmode: 'no-switch',
     },
@@ -24,10 +22,13 @@ var DynamicsContainer = {
         code: "",
         date: "",
         timestart: null,
+    },
+    testContainer: {
+        trialData: []
     }
 }
 
-const rampThresholdCorrect = 2;
+const rampThresholdConsCorrect = 2;
 
 const defaultColorFlashDef = {
     bgcolor: "yellow",
@@ -45,15 +46,26 @@ var EventFunctions = {
     forProbeFlash: function(e) {
         FlashProbe(e.target);
     },
-    forProbeHover: function(e) {
-
+    forProbeClick: function(e) {
+        SelectProbe(e.target);
+        if (CheckTrialFinish()) {
+            setPlayMode("off");
+        }
     }
 }
 
 function SelectProbe(object) {
     probeRef = object;
+    _name = object.getAttribute("id");
     //do upon being selected
+    DynamicsContainer.trialParam.answersequences.push(_name[_name.length - 1]);
+    console.log(DynamicsContainer.trialParam);
     //do after selected
+}
+
+function CheckTrialFinish() {
+    var tparams = DynamicsContainer.trialParam;
+    return tparams.answersequences.length == tparams.seqLength;
 }
 
 function FlashProbe(object, flashmode = "flashing-forward", timeout = defaultTimeout) {
@@ -68,7 +80,7 @@ function FlashProbe(object, flashmode = "flashing-forward", timeout = defaultTim
             break;
     }
     setTimeout(function() {
-        probeRef.setAttribute("class", old_class)
+        probeRef.setAttribute("class", "Probe")
     }, timeout)
 }
 
@@ -96,19 +108,22 @@ function setPlayMode(mode = "on") {
             for (let i = 1; i < 7; i++) {
                 var temp = document.getElementById("Probe" + i)
                 temp.addEventListener("click", EventFunctions.forProbeFlash)
+                temp.addEventListener("click", EventFunctions.forProbeClick)
             }
             break;
-        case "off":
+        case "demo":
             for (let i = 1; i < 7; i++) {
                 var temp = document.getElementById("Probe" + i)
                 temp.addEventListener("click", EventFunctions.forProbeFlash)
             }
+        case "off":
+            for (let i = 1; i < 7; i++) {
+                var temp = document.getElementById("Probe" + i)
+                temp.removeEventListener("click", EventFunctions.forProbeFlash)
+                temp.removeEventListener("click", EventFunctions.forProbeClick)
+            }
             break;
     }
-}
-
-function TrialPrep() {
-
 }
 
 function InitializeTestparams(firstname = null, middlename = null, lastname = null, code = null, startseqLength = 3, span = 'forward', maxTrial = 40, testmode = 'no-switch') {
@@ -120,7 +135,7 @@ function InitializeTestparams(firstname = null, middlename = null, lastname = nu
     idf.identifiers.lname = lastname || "testlname";
 
     let tempcode = code || "test";
-    idf.identifiers.code = sha256(tempcode);
+    idf.identifiers.code = sha256Js.sha256(tempcode);
     idf.identifiers.date = (new Date()).toDateString();
 
     ecl.seqLength = startseqLength;
@@ -132,28 +147,21 @@ function InitializeTestparams(firstname = null, middlename = null, lastname = nu
     ecl.consecutivecorrect = 0;
 }
 
-function InitiateTest(currentSeqLength, stagnation, consecutivecorrect, testmode) {
-    switch (stagnation) {
-        case true:
-            //assign old sequence to variable seq
-            //seq = genSeq(currentSeqLength);
-            break;
-        case false:
-            if (consecutivecorrect == rampThresholdCorrect) {
-                console.log("Hello");
-            }
-            break;
-    }
+function updateDynamicparams() {
 
-    switch (testmode) {
-        case "no-switch":
-            break;
-        case "switch":
-            //calculate switching logic
-            break;
-    }
+}
 
+function InitiateTest(currentSeqLength, consecutivecorrect, consecutivespancorrect, testmode) {
+    //To do
+}
 
+switch (testmode) {
+    case "no-switch":
+        break;
+    case "switch":
+        //calculate switching logic
+        break;
+}
 }
 
 function FinishTrial(numTrial, seqLength) {
