@@ -7,6 +7,14 @@
     --crosshair-length: 40px;
     --crosshair-width: 5px;
     --main-bg-color: rgb(126, 126, 126);
+
+    --canvas-width: 75%;
+    --canvas-height: 80%;
+
+    --backgroundcolor-forward: rgb(102, 228, 102);
+    --backgroundcolor-backward: rgb(252, 42, 105);
+    --backgroundcolor-neutral: rgb(189, 189, 189);
+    --canvas-radii: 5%;
 }
 
 html {
@@ -43,12 +51,13 @@ main {
     text-align: center;
     justify-content: center;
     align-items: center;
-    width: 75%;
-    height: 85%;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
     margin: 0 5%;
-    border: 10px solid red;
+    border: 5px solid red;
     background-color: bisque;
     margin: 0 auto;
+    border-radius: var(--canvas-radii);
 }
 
 .testCanvas {
@@ -56,11 +65,51 @@ main {
     text-align: center;
     justify-content: center;
     align-items: center;
-    width: 75%;
-    height: 85%;
-    border: 10px solid red;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
+    border: 5px solid red;
     background-color: bisque;
     margin: 0 auto;
+    border-radius: var(--canvas-radii);
+}
+
+.testCanvas-forward {
+    position: relative;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
+    border: 5px solid red;
+    background-color: var(--backgroundcolor-forward);
+    margin: 0 auto;
+    border-radius: var(--canvas-radii);
+}
+
+.testCanvas-backward {
+    position: relative;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
+    border: 5px solid red;
+    background-color: var(--backgroundcolor-backward);
+    margin: 0 auto;
+    border-radius: var(--canvas-radii);
+}
+
+.testCanvas-neutral {
+    position: relative;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
+    border: 5px solid red;
+    background-color: var(--backgroundcolor-neutral);
+    margin: 0 auto;
+    border-radius: var(--canvas-radii);
 }
 
 .Probe {

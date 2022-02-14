@@ -1,20 +1,40 @@
+const rampThresholdConsCorrect = 2;
+const defaultTimeout = 250;
+const defaultISI = 1000;
+const trialfinevent = new Event('trial-finish');
+const testfinevent = new Event('test-finish');
+const initializeevent = new Event('test-initialized');
+
+function main() {
+    document.addEventListener('trial-finish', EventFunctions.onTrialFinish);
+    document.addEventListener('test-finish', EventFunctions.onTestFinish);
+    document.addEventListener('test-initialized',EventFunctions.onTestintitialized);
+}
+
+
 var DynamicsContainer = {
     currTrialData: {
-        seqLength: null,
-        sequences: [],
-        answersequences: [],
+        seqlength: null,
+        sequence: [],
+        answersequence: [],
         span: null,
-        correct: [],
+        correct: null,
         reactiontimes: []
     },
     EventController: {
-        seqLength: 3,
+        seqlength: 3,
         timestart: 0,
         span: "",
+        oldspan: null;
         consecutivecorrect: 0,
+        c
         consecutiveSpancorrect: 0,
-        maxTrial: 40,
-        testmode: 'no-switch',
+        currTrial:1,
+        maxtrial: 40,
+        testmode: null,
+        switchingFunc: function () {;},
+        trialEndFunc: function () {;},
+        testEndFunc: function () {;},
     },
     identifiers: {
         fname: "",
@@ -28,8 +48,10 @@ var DynamicsContainer = {
         trialData: [],
         created: []
     },
-    trialData: function (seqlength = null,span = null,sequence = null,answersequence = null,reactiontimes = null) {
+
+    trialData: function (trialnumber = null, seqlength = null, span = null, sequence = null, answersequence = null, reactiontimes = null) {
         let obj = {}
+        obj.trialnumber = trialnumber;
         obj.seqlength = seqlength;
         obj.span = span;
         obj.sequence = sequence;
@@ -37,47 +59,80 @@ var DynamicsContainer = {
         if (sequence == null) {obj.correct = null} else{ obj.correct = MiscOperationFunction.compareSeq(sequence,answersequence) }
         obj.reactiontimes = reactiontimes
         return obj
+    },
+
+    eventController: function (currtrial, seqlength, timestart, span, oldspan, consecutivecorrect, consecutivespancorrect, maxtrial, testmode) {
+        let obj = {}
+        obj.CurrTrial = currtrial;
+        obj.seqlength = seqlength;
+        obj.timestart = timestart;
+        obj.span = span;
+        obj.oldspan = oldspan;
+        obj.consecutivecorrect = consecutivecorrect;
+        obj.consecutivespancorrect = consecutivespancorrect;
+        obj.maxtrial = maxtrial;
+        obj.testmode = testmode;
+        obj.switchingFunc = switchingFuncGenerator(testmode);
     }
 }
 
-const rampThresholdConsCorrect = 2;
-
-const defaultColorFlashDef = {
-    bgcolor: "yellow",
-    bdcolor: "white",
+function switchingFuncGenerator(testmode) {
+    switch (testmode) {
+        case "1-up-2-down-no-switch-forward-stag": //only forward
+            var res_func = function (dynamicscontainer) {
+                //To do
+            }
+            break;
+        case "1-up-2-down-no-switch-backward-stag": //only backward
+            break;
+        case "1-up-2-down-half-switch-stag": // First half forward then backward with stagnation
+            let res_func = function (dynamicscontainer) {
+                let ecl = dynamicscontainer.EventController;
+                concorr = ecl.consecutivecorrect;
+                conspancorr = ecl.consecutivespancorrect
+            }
+            break;
+        case "default-ramp-switch-stag": // ramp-switch with default parameters
+            break;
+        case "1-up-2-down-random-stag": // 1:1 chance keep : change
+            break;
+        case "1-up-2-down-stag": //
+            break;
+    }
 }
-
-const defaultColorHoverDef = {
-    bordercolor: "white",
-}
-
-const defaultTimeout = 250;
-
 
 var EventFunctions = {
     forProbeFlash: function(e) {
         FlashProbe(e.target);
-    },
+        },
     forProbeClick: function(e) {
         SelectProbe(e.target);
         if (CheckTrialFinish()) {
             setPlayMode("off");
-        }
+            }
+        },
+    onTrialFinish: function(e) {
+        console.log("Trial Finish");
+        console.log(DynamicsContainer.currTrialData);
+        },
+    onTestFinish: function (e) {
+        console.log("Test Finish");
+        console.log(DynamicsContainer.testContainer);
+        },
+    onTestintitialized: function (e) {
+        console.log('Test initialized');
+        console.log(DynamicsContainer.EventController);
+        console.log(DynamicsContainer.identifiers);
+        },
     }
 }
 
 function SelectProbe(object) {
-    probeRef = object;
     _name = object.getAttribute("id");
     //do upon being selected
-    DynamicsContainer.currTrialData.answersequences.push(_name[_name.length - 1]);
+    DynamicsContainer.currTrialData.answersequence.push(_name[_name.length - 1]); //push only probe number to answer collection
     console.log(DynamicsContainer.currTrialData);
     //do after selected
-}
-
-function CheckTrialFinish() {
-    var tparams = DynamicsContainer.currTrialData;
-    return tparams.answersequences.length == tparams.seqLength;
 }
 
 function FlashProbe(object, flashmode = "flashing-forward", timeout = defaultTimeout) {
@@ -96,7 +151,7 @@ function FlashProbe(object, flashmode = "flashing-forward", timeout = defaultTim
     }, timeout)
 }
 
-function sequenceFlash(seq, flashmode = "flashing-forward", timeout = defaultTimeout, ISI = 1000, seqmode = 'const-interval') {
+function sequenceFlash(seq, flashmode = "flashing-forward", timeout = defaultTimeout, ISI = defaultISI, seqmode = 'const-interval') {
     switch (seqmode) {
         case "const-interval":
             let waittime = ISI - timeout;
@@ -133,7 +188,7 @@ function setPlayMode(mode = "on") {
     }
 }
 
-function InitializeTestparams(firstname = null, middlename = null, lastname = null, code = null, startseqLength = 3, span = 'forward', maxTrial = 40, testmode = 'no-switch') {
+function InitializeTestparams(firstname = null, middlename = null, lastname = null, code = null, startseqlength = 3, span = 'forward', maxtrial = 40, testmode = 'no-switch') {
     var idf = DynamicsContainer.identifiers;
     var ecl = DynamicsContainer.EventController;
 
@@ -145,31 +200,36 @@ function InitializeTestparams(firstname = null, middlename = null, lastname = nu
     idf.identifiers.code = MiscOperationFunction.sha256(tempcode);
     idf.identifiers.date = (new Date()).toDateString();
 
-    ecl.seqLength = startseqLength;
+    ecl.seqlength = startseqlength;
     ecl.span = span;
     ecl.timestart = (new Date()).toTimeString();
-    ecl.maxTrial = maxTrial;
+    ecl.maxtrial = maxtrial;
     ecl.testmode = testmode;
     ecl.consecutivecorrect = 0;
     ecl.consecutiveSpancorrect = 0;
+    ecl.currTrial = 1;
 }
 
 function updateDynamicparams(DynamicsContainer) {
-    currSeq = DynamicsContainer.currTrialData.sequences;
-    ansSeq = DynamicsContainer.currTrialData.answersequences;
+    currSeq = DynamicsContainer.currTrialData.sequence;
+    ansSeq = DynamicsContainer.currTrialData.answersequence;
     correct = MiscOperationFunction.compareSeq(currSeq,ansSeq);
     poscsccorrect =  DynamicsContainer.EventController.consecutivecorrect >= 0;
     poscscspancorrect = ansSeq.EventController.consecutiveSpancorrect >= 0;
+
     switch (correct) {
         case true:
             if (poscsccorrect) {
                 DynamicsContainer.EventController.consecutivecorrect += 1;
                 DynamicsContainer.EventController.consecutiveSpancorrect +=1;
-                // TO DO: if Span change reset to 0
             } else {
                 DynamicsContainer.EventController.consecutivecorrect = 1;
                 DynamicsContainer.EventController.consecutiveSpancorrect =1;
             }
+            if (DynamicsContainer.EventController.span != DynamicsContainer.EventController.oldspan)
+                {
+                    DynamicsContainer.EventController.consecutiveSpancorrect = 0;
+                }
             break;
         case false:
             if (poscsccorrect) {
@@ -178,48 +238,35 @@ function updateDynamicparams(DynamicsContainer) {
             } else {
                 DynamicsContainer.EventController.consecutivecorrect += 1;
                 DynamicsContainer.EventController.consecutiveSpancorrect +=1;
-                // TO DO: if Span change reset to 0   
             }
+            if (DynamicsContainer.EventController.span != DynamicsContainer.EventController.oldspan)
+                {
+                    DynamicsContainer.EventController.consecutiveSpancorrect = 0;
+                }
             break;
     }
 }
 
-function InitiateTest(currentSeqLength, consecutivecorrect, consecutivespancorrect, testmode) {
-    //To do
+function InitiateTest(currentseqlength, consecutivecorrect, consecutivespancorrect, testmode) {
     switch (testmode) {
         case "no-switch":
+
             break;
         case "switch":
             //calculate switching logic
             break;
     }
+    document.dispatchEvent(initializeevent);
 }
 
-function FinishTrial(numTrial, seqLength) {
-    //remove all event listener on probe
-    //wait fo next trial
-    //Check if finish test
-    //generate trialdata
-}
-
-function genSeq(seqLength, numOption = 6) {
+function genSeq(seqlength, numOption = 6) {
     var seq = []
-    for (var i = 0; i < seqLength; i++) {
+    for (var i = 0; i < seqlength; i++) {
         // randInt from 1 to 6 
         var num = Math.floor(Math.random() * numOption) + 1;
         seq[i] = num;
     };
     return seq;
-}
-
-function TrialCueData(numTrial, seqLength, seqSpan) {
-    var TrialCueData = {
-        numTrial: numTrial,
-        seqLength: seqLength,
-        Seq: genSeq(seqLength),
-        seqSpan: seqSpan,
-    };
-    return TrialCueData;
 }
 
 function playData() {
@@ -230,26 +277,37 @@ function playData() {
     return playData;
 }
 
-function TrialData(TrialCueData, playData) {
-    var TrialData = {
-        numTrial: TrialCueData.numTrial,
-        seqLength: TrialCueData.seqLength,
-        Seq: TrialCueData.Seq,
-        seqSpan: TrialCueData.seqSpan
-    };
-    return TrialData
+function CheckFinishTrial(dynamicscontainer) {
+    if (dynamicscontainer.currTrialData.seqlength == dynamicscontainer.currTrialData.sequence.length) {
+        //print("Trial end with");
+        //console.log(dynamicscontainer.currTrial);
+        return yes
+    }
 }
 
-function ToDB() {
-
+function CheckFinishTest(dynamicscontainer) {
+    if (dynamicscontainer.currTrialData.seqlength == dynamicscontainer.currTrialData.sequence.length) {
+        //print("Trial end with")
+        //console.log(dynamicscontainer)
+        return yes
+    }
 }
 
-function FinishTest() {
-
-}
-
-function changeBackgroundColor() {
-
+function changeBackground(backgroundmode = 'forward') {
+    let canvas = document.getElementById('testCanvas');
+    let changeto = null;
+    switch(backgroundmode) {
+        case ('forward'):
+            changeto = 'testCanvas-forward';
+            break;
+        case ('backward'):
+            changeto = 'testCanvas-backward';
+            break;
+        case ('neutral'):
+            changeto = 'testCanvas-neutral';
+            break;
+    }
+    canvas.setAttribute('class', changeto)
 }
 
 //#region MiscOperationFunction
