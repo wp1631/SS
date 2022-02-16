@@ -8,6 +8,7 @@ const trialfinevent = new Event('trial-finish');
 const testfinevent = new Event('test-finish');
 const initializeevent = new Event('test-initialized');
 const nextrialevent = new Event('next-trial');
+const sessionendevent = new Event('session-end')
 
 
 function main() {
@@ -24,7 +25,7 @@ var DynamicsContainer = {
         answersequence: [],
         span: null,
         correct: null,
-        reactiontimes: []
+        anstimes: []
     },
     EventController: {
         initialseqlength: 2,
@@ -32,7 +33,9 @@ var DynamicsContainer = {
         timestart: 0,
         span: "",
         currTrial: 1,
-        maxtrial: 40,
+        maxtrial: 20,
+        ISImode: null,
+        probetimeout: null,
         testmode: null,
         switchingFunc: function() {; },
     },
@@ -46,12 +49,16 @@ var DynamicsContainer = {
     },
     testContainer: {
         trialData: [],
-        spans = [],
-        corrects = [],
-        created: []
+        spans: [],
+        corrects: [],
+        created: [],
+        testmode: null,
+        ISImode: null,
+        probetimeout: null,
+        maxtrial: null,
     },
 
-    trialData: function(trialnumber = null, seqlength = null, span = null, sequence = null, answersequence = null, reactiontimes = null) {
+    trialData: function(trialnumber = null, seqlength = null, span = null, sequence = null, answersequence = null, anstimes = null) {
         let obj = {}
         obj.trialnumber = trialnumber;
         obj.seqlength = seqlength;
@@ -59,11 +66,11 @@ var DynamicsContainer = {
         obj.sequence = sequence;
         obj.answersequence = answersequence;
         if (sequence == null) { obj.correct = null } else { obj.correct = MiscOperationFunction.compareSeq(sequence, answersequence) }
-        obj.reactiontimes = reactiontimes
-        return obj
+        obj.anstimes = anstimes;
+        return obj;
     },
 
-    eventController: function(currtrial, iniseqlength, timestart, span, oldspan, consecutivecorrect, consecutivespancorrect, maxtrial, testmode) {
+    eventController: function(currtrial, iniseqlength, timestart, span, consecutivecorrect, consecutivespancorrect, maxtrial, testmode, ISImode, probetimeout) {
         let obj = {}
         obj.CurrTrial = currtrial;
         obj.initialseqlength = iniseqlength;
@@ -75,52 +82,122 @@ var DynamicsContainer = {
         obj.consecutivespancorrect = consecutivespancorrect;
         obj.maxtrial = maxtrial;
         obj.testmode = testmode;
+        obj.ISImode = ISImode;
+        obj.probetimeout = probetimeout;
         obj.switchingFunc = switchingFuncGenerator(testmode);
+        return obj;
+    },
+}
+
+function dynamicUpdate(dynamicscontainer, promptupdate) {
+    var ecl = dynamicscontainer.EventController;
+    if (promtupdate.seqlength) {
+        switch (promtupdate.seqlength) {
+            case 'up':
+                ecl.seqlength += 1;
+                break;
+            case 'down':
+                ecl.seqlength -= 1;
+                break;
+            case 'reset':
+                ecl.seqlength = ecl.iniseqlength;
+        }
     }
 
-        update: function() {
-        let swlogic = this.switchingFunc(this);
-        let splogic = this.spanFunc(this);
-        switch (swlogic) {
-            case true:
-                if (this.ecl.span == 'forward') { this.ecl.span = 'backward' } else if (this.ecl.span == 'backward') { this.ecl.span = 'forward' }
+    if (promtupdate.span) {
+        switch (promtupdate.span) {
+            case 'reverse':
+                ecl.span = (ecl.span == 'forward') ? 'backward' : 'forward';
                 break;
-            case false:
+            case 'forward':
+                ecl.span = 'forward';
                 break;
-            default:
-                console.log("This should not happen")
+            case 'backward':
+                ecl.span = 'backward';
                 break;
-        }
-        switch (splogic) {
-            case ''
         }
     }
 }
 
-function updateDynamicparams() {
-
+function promptNewTrial(dynamicscontainer) {
+    var currtrial = dynamicscontainer.currTrialData;
+    currtrial = null;
 }
 
 function switchingFuncGenerator(testmode) {
     switch (testmode) {
         case "1-up-2-down-no-switch-forward-stag": //only forward
-            var res_func = function(dynamicscontainer) {
-                //To do
-            }
             break;
         case "1-up-2-down-no-switch-backward-stag": //only backward
             break;
         case "1-up-2-down-half-switch-stag": // First half forward then backward with stagnation
             let res_func = function(dynamicscontainer) {
-                let ecl = dynamicscontainer.EventController;
-                if (ecl.currTrial == Math.floor(ecl.maxtrial / 2.0)) {
-                    return true;
-                } else {
-                    return false;
+                let corr = dynamicscontainer.testContainer.corrects;
+                let sp = dynamicscontainer.testContainer.spans;
+                let length = sp.length;
+                let promtupdate = {};
+
+                //#region span cehck
+                if (length > 2) {
+                    if (sp.includes('backward')) {
+                        let ll = length - sp.lastIndexOf('forward');
+                        if (ll > 3) {
+                            switch (ll % 2) {
+                                case 0: //even
+                                    if (corr[length - 1]) {
+                                        if ((corr[length - 3] == false) && (corr[length - 4] == false)) {
+                                            if (corr[length - 2]) {
+                                                promtupdate.seqlength = 'up'
+                                            } else {
+                                                document.dispatchEvent(sessionendevent);
+                                            }
+                                        } else if (corr[length - 1] || corr[length - 2]) {
+                                            promtupdate.seqlength = 'up'
+                                        } else {
+                                            //Do nothing
+                                        }
+                                    }
+                                    break;
+                                case 1: //odd
+                                    if (corr[length - 1] && (corr[length - 2] == false) && (corr[length - 3] == false)) {
+                                        document.dispatchEvent(sessionendevent);
+                                    }
+                                    break;
+                            }
+                        }
+                    } else {
+                        // length of forward equal to total length
+                        if (length == dynamicscontainer.eventController.maxtrial) {
+                            document.dispatchEvent(sessionendevent);
+                        } else {
+                            switch (length % 2) {
+                                case 1: // odd
+                                    //signal sessionend for first correct after long consecutive false
+                                    if (corr[length - 1] && (corr[length - 2] == false) && (corr[length - 3] == false)) {
+                                        document.dispatchEvent(sessionendevent);
+                                    }
+                                    break;
+                                case 0: //even
+                                    if (corr[length - 1]) {
+                                        if ((corr[length - 3] == false) && (corr[length - 4] == false)) {
+                                            if (corr[length - 2]) {
+                                                promtupdate.seqlength = 'up'
+                                            } else {
+                                                document.dispatchEvent(sessionendevent);
+                                            }
+                                        } else if (corr[length - 1] || corr[length - 2]) {
+                                            promtupdate.seqlength = 'up'
+                                        } else {
+                                            //Do nothing
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+                    }
                 }
+                //#endregion
             }
-            return res_func;
-            break;
         case "default-ramp-switch-stag": // ramp-switch with default parameters
             break;
         case "1-up-2-down-random-stag": // 1:1 chance keep : change
@@ -128,6 +205,7 @@ function switchingFuncGenerator(testmode) {
         case "1-up-2-down-stag": //
             break;
     }
+    return res_func;
 }
 
 var EventFunctions = {
@@ -153,7 +231,6 @@ var EventFunctions = {
         console.log(DynamicsContainer.EventController);
         console.log(DynamicsContainer.identifiers);
     },
-}
 }
 
 function SelectProbe(object) {
@@ -275,19 +352,6 @@ function updateDynamicparams(DynamicsContainer) {
     }
 }
 **/
-
-
-function InitiateTest(currentseqlength, consecutivecorrect, consecutivespancorrect, testmode) {
-    switch (testmode) {
-        case "no-switch":
-
-            break;
-        case "switch":
-            //calculate switching logic
-            break;
-    }
-    document.dispatchEvent(initializeevent);
-}
 
 function genSeq(seqlength, numOption = 6) {
     var seq = []
