@@ -91,8 +91,8 @@ var DynamicsContainer = {
 
 function dynamicUpdate(dynamicscontainer, promptupdate) {
     var ecl = dynamicscontainer.EventController;
-    if (promtupdate.seqlength) {
-        switch (promtupdate.seqlength) {
+    if (promptupdate.seqlength) {
+        switch (promptupdate.seqlength) {
             case 'up':
                 ecl.seqlength += 1;
                 break;
@@ -104,8 +104,8 @@ function dynamicUpdate(dynamicscontainer, promptupdate) {
         }
     }
 
-    if (promtupdate.span) {
-        switch (promtupdate.span) {
+    if (promptupdate.span) {
+        switch (promptupdate.span) {
             case 'reverse':
                 ecl.span = (ecl.span == 'forward') ? 'backward' : 'forward';
                 break;
@@ -131,45 +131,50 @@ function switchingFuncGenerator(testmode) {
         case "1-up-2-down-no-switch-backward-stag": //only backward
             break;
         case "1-up-2-down-half-switch-stag": // First half forward then backward with stagnation
-            let res_func = function(dynamicscontainer) {
+            function res_func(dynamicscontainer) {
                 let corr = dynamicscontainer.testContainer.corrects;
                 let sp = dynamicscontainer.testContainer.spans;
                 let length = sp.length;
                 let promtupdate = {};
-
-                //#region span cehck
+                //#region span check
                 if (length > 2) {
                     if (sp.includes('backward')) {
                         let ll = length - sp.lastIndexOf('forward');
                         if (ll > 3) {
-                            switch (ll % 2) {
-                                case 0: //even
-                                    if (corr[length - 1]) {
-                                        if ((corr[length - 3] == false) && (corr[length - 4] == false)) {
-                                            if (corr[length - 2]) {
-                                                promtupdate.seqlength = 'up'
+                            if (length - ll == 21) {
+                                document.dispatchEvent(sessionendevent);
+                            } else if (length - ll < 22) {
+                                switch (ll % 2) {
+                                    case 0: //even
+                                        if (corr[length - 1]) {
+                                            if ((corr[length - 3] == false) && (corr[length - 4] == false)) {
+                                                if (corghbhbjhbjhar[length - 2]) {
+                                                    promtupdate.seqlength = 'up';
+                                                } else {
+                                                    document.dispatchEvent(sessionendevent);
+                                                }
+                                            } else if (corr[length - 1] || corr[length - 2]) {
+                                                promtupdate.seqlength = 'up';
                                             } else {
-                                                document.dispatchEvent(sessionendevent);
+                                                //Do nothing
                                             }
-                                        } else if (corr[length - 1] || corr[length - 2]) {
-                                            promtupdate.seqlength = 'up'
-                                        } else {
-                                            //Do nothing
                                         }
-                                    }
-                                    break;
-                                case 1: //odd
-                                    if (corr[length - 1] && (corr[length - 2] == false) && (corr[length - 3] == false)) {
-                                        document.dispatchEvent(sessionendevent);
-                                    }
-                                    break;
+                                        break;
+                                    case 1: //odd
+                                        if (corr[length - 1] && (corr[length - 2] == false) && (corr[length - 3] == false)) {
+                                            document.dispatchEvent(sessionendevent);
+                                        }
+                                        break;
+                                }
+                            } else {
+                                console.log("We should not be here");
                             }
                         }
                     } else {
                         // length of forward equal to total length
-                        if (length == dynamicscontainer.eventController.maxtrial) {
+                        if (length == dynamicscontainer.EventController.maxtrial) {
                             document.dispatchEvent(sessionendevent);
-                        } else {
+                        } else if (length < dynamicscontainer.EventController.maxtrial + 1) {
                             switch (length % 2) {
                                 case 1: // odd
                                     //signal sessionend for first correct after long consecutive false
@@ -181,18 +186,20 @@ function switchingFuncGenerator(testmode) {
                                     if (corr[length - 1]) {
                                         if ((corr[length - 3] == false) && (corr[length - 4] == false)) {
                                             if (corr[length - 2]) {
-                                                promtupdate.seqlength = 'up'
+                                                promtupdate.seqlength = 'up';
                                             } else {
                                                 document.dispatchEvent(sessionendevent);
                                             }
                                         } else if (corr[length - 1] || corr[length - 2]) {
-                                            promtupdate.seqlength = 'up'
+                                            promtupdate.seqlength = 'up';
                                         } else {
                                             //Do nothing
                                         }
                                     }
                                     break;
                             }
+                        } else {
+                            console.log("We should not be here"); // Error
                         }
                     }
                 }
