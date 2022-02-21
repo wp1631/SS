@@ -1,16 +1,14 @@
 :root {
-    --probe-base-unit: 120px;
-    --probe-span-radius: 200px;
+    --probe-base-unit: min(calc(0.15*100vw), calc(0.15*100vh));
+    --probe-span-radius: min(calc(0.2*100vw), calc(0.2*100vh));
     --cos30: 0.86602540378;
     --sin30: 0.5;
     --crosshair-color: black;
-    --crosshair-length: 40px;
-    --crosshair-width: 5px;
+    --crosshair-length: max(20px, calc(var(--probe-span-radius)/3.0));
+    --crosshair-width: max(5px, calc(var(--probe-span-radius)/24.0));
     --main-bg-color: rgb(126, 126, 126);
-
     --canvas-width: 75%;
     --canvas-height: 80%;
-
     --backgroundcolor-forward: rgb(102, 228, 102);
     --backgroundcolor-backward: rgb(252, 42, 105);
     --backgroundcolor-neutral: rgb(189, 189, 189);
@@ -44,6 +42,34 @@ main {
     align-items: center;
     width: 100%;
     height: 85vh;
+}
+
+.welcomeCanvas {
+    position: relative;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
+    margin: 0 5%;
+    border: 5px solid red;
+    background-color: bisque;
+    margin: 0 auto;
+    border-radius: var(--canvas-radii);
+}
+
+.preparationCanvas {
+    position: relative;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
+    margin: 0 5%;
+    border: 5px solid red;
+    background-color: bisque;
+    margin: 0 auto;
+    border-radius: var(--canvas-radii);
 }
 
 .instructionCanvas {
