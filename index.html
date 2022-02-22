@@ -35,11 +35,11 @@
         <div id="preparationCanvas" class="preparationCanvas" hidden>
             <form id="preparation-form" method="dialog" onsubmit="document.dispatchEvent(preparationsubmitevent);">
                 <label for="fname>">ชื่อจริง (First name)</label>
-                <input type="text" id='fname' name="fname" placeholder="ชื่อจริง" minlength=1 maxlength=20 pattern="^[\u0E00-\u0E4Ea-zA-Z]{1,20}$" required><br>
+                <input type="text" id='fname' name="fname" placeholder="ชื่อจริง" minlength=1 maxlength=20 pattern="^[\u0E00-\u0E4Ea-zA-Z]{1,20}$" oninput="fnameValidation(this);" oninvalid="fnameValidation(this)" required><br>
                 <label for="mname>">ชื่อกลาง (Middle name)</label>
-                <input type="text" id='mname' name="mname" placeholder="ชื่อกลาง (ถ้ามี)" minlength="0" maxlength=2 pattern="^[\u0E00-\u0E4Ea-zA-Z]{0,20}$"><br>
+                <input type="text" id='mname' name="mname" placeholder="ชื่อกลาง (ถ้ามี)" minlength="0" maxlength=2 pattern="^[\u0E00-\u0E4Ea-zA-Z]{0,20}$" oninput="mnameValidation(this);" oninvalid="mnameValidation(this)"><br>
                 <label for="lname>">นามสกุล (Last name)</label>
-                <input type="text" id='lname' name="lname" placeholder="นามสกุล" minlength=1 maxlength=20 pattern="^[\u0E00-\u0E4Ea-zA-Z]{1,20}$" required><br>
+                <input type="text" id='lname' name="lname" placeholder="นามสกุล" minlength=1 maxlength=20 pattern="^[\u0E00-\u0E4Ea-zA-Z]{1,20}$" oninput="lnameValidation(this);" oninvalid="lnameValidation(this)" required><br>
                 <label for="dob">วันเกิด</label>
                 <input type='date' id="dob" name="dob" placeholder='1997/1/1' required><br>
                 <label for="testmode" hidden>รูปแบบการทดสอบ</label>

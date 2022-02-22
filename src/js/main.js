@@ -16,7 +16,8 @@ const instructionnextevent = new Event('instruction-next');
 const instructdemoevent = new Event('instruction-demo-mode');
 const instructfinevent = new Event('instruction-finish');
 
-const testinitializeevent = new Event('test-initialized');
+const eventcontrollerinitiateevent = new Event('eventcontroller-initiate');
+const teststartevent = new Event('test-start');
 const nextrialevent = new Event('next-trial');
 const trialfinevent = new Event('trial-finish');
 const sessionendevent = new Event('session-end');
@@ -26,11 +27,14 @@ function main() {
     document.addEventListener('consent-submit', EventFunctions.onConsentSubmit);
     document.addEventListener('preparation-start', EventFunctions.onPreparationStart);
     document.addEventListener('preparation-submit', EventFunctions.onPreparationSubmit);
+
     document.addEventListener('test-initialized', EventFunctions.onTestintitialized);
     document.addEventListener('trial-finish', EventFunctions.onTrialFinish);
     document.addEventListener('test-finish', EventFunctions.onTestFinish);
+
     document.addEventListener('instruction-start', EventFunctions.onInstructionStart);
     document.addEventListener('instruction-next', EventFunctions.onInstructionNext);
+    document.addEventListener('instruction-finish',EventFunctions.onInstructionFinish);
 }
 
 var DynamicsContainer = {
@@ -63,6 +67,29 @@ var DynamicsContainer = {
         date: "",
         timestart: null,
     },
+    
+    Timer: {
+        timeteststart: null,
+        timetestfinish: null,
+
+        timetrialstart: null,
+        timetrialanswer: null, // [t1, t2, t3, t4]
+        timetrialfinish: null, // 
+    },
+    trialData: function(trialnumber = null, seqlength = null, span = null, sequence = null, answersequence = null, anstimes = null, trialstart = null, trialfinish = null,) {
+        let obj = {}
+        obj.trialstart = trialstart;
+        obj.trialfinish = trialfinish;
+        obj.trialnumber = trialnumber;
+        obj.seqlength = seqlength;
+        obj.span = span;
+        obj.sequence = sequence;
+        obj.answersequence = answersequence;
+        if (sequence == null) { obj.correct = null } else { obj.correct = MiscOperationFunction.compareSeq(sequence, answersequence) }
+        obj.anstimes = anstimes;
+        return obj;
+    },
+
     testContainer: {
         trialData: [],
         spans: [],
@@ -73,26 +100,52 @@ var DynamicsContainer = {
         probetimeout: null,
         maxtrial: null,
     },
-    Timer: {
-        timeteststart: null,
-        timetestfinish: null,
 
-        timetrialstart: null,
-        timetrialanswer: null, // [t1, t2, t3, t4]
-        timetrialfinish: null, // 
-    },
-    trialData: function(trialnumber = null, seqlength = null, span = null, sequence = null, answersequence = null, anstimes = null) {
-        let obj = {}
-        obj.trialnumber = trialnumber;
-        obj.seqlength = seqlength;
-        obj.span = span;
-        obj.sequence = sequence;
-        obj.answersequence = answersequence;
-        if (sequence == null) { obj.correct = null } else { obj.correct = MiscOperationFunction.compareSeq(sequence, answersequence) }
-        obj.anstimes = anstimes;
-        return obj;
-    },
+    sumTestData: function () {
+        
+    }
+
+
 }
+
+//#region form validity
+function fnameValidation(object) {
+    if (object.value === '') {
+        object.setCustomValidity('กรุณากรอก ชื่อจริง\nPlease fill your firstname');
+    } else if (object.validity.typeMismatch){
+        object.setCustomValidity('ชื่อจริง เป็นภาษาไทยหรือภาษาอังกฤษ ไม่มีเว้นวรรคและอักขระพิเศษ\nThai or English without spacings and special characters');
+    } else if (object.validity.patternMismatch){
+        object.setCustomValidity('ชื่อจริง เป็นภาษาไทยหรือภาษาอังกฤษ ไม่มีเว้นวรรคและอักขระพิเศษ\nThai or English without spacings and special characters');
+    } else {
+        object.setCustomValidity('');
+    }
+    return true;
+}
+
+function mnameValidation(object) {
+    if (object.validity.typeMismatch){
+        object.setCustomValidity('ชื่อกลาง เป็นภาษาไทยหรือภาษาอังกฤษ ไม่มีเว้นวรรคและอักขระพิเศษ\nThai or English without spacings and special characters');
+    } else if (object.validity.patternMismatch){
+        object.setCustomValidity('ชื่อกลาง เป็นภาษาไทยหรือภาษาอังกฤษ ไม่มีเว้นวรรคและอักขระพิเศษ\nThai or English without spacings and special characters');
+    } else {
+        object.setCustomValidity('');
+    }
+    return true;
+}
+
+function lnameValidation(object) {
+    if (object.value === '') {
+        object.setCustomValidity('กรุณากรอก นามสกุล\nPlease fill your lastname');
+    } else if (object.validity.typeMismatch){
+        object.setCustomValidity('นามสกุล เป็นภาษาไทยหรือภาษาอังกฤษ ไม่มีเว้นวรรคและอักขระพิเศษ\nThai or English without spacings and special characters');
+    } else if (object.validity.patternMismatch){
+        object.setCustomValidity('นามสกุล เป็นภาษาไทยหรือภาษาอังกฤษ ไม่มีเว้นวรรคและอักขระพิเศษ\nThai or English without spacings and special characters');
+    } else {
+        object.setCustomValidity('');
+    }
+    return true;
+}
+//#endregion 
 
 function dynamicUpdate(dynamicscontainer, promptupdate) {
     var ecl = dynamicscontainer.EventController;
@@ -310,6 +363,10 @@ var EventFunctions = {
     onInstructionFinish: function(e) {
         document.getElementById('instructionCanvas').hidden = true;
         document.getElementById('testCanvas').hidden = false;
+        document.dispatchEvent(eventcontrollerinitiateevent);
+    },
+    onEventControllerInitiation: function (e) {
+        document.dispatchEvent(teststartevent);
     }
 }
 
