@@ -74,9 +74,12 @@ var DynamicsContainer = {
         maxtrial: null,
     },
     Timer: {
-        timestarttest: null;
-        timestarttrial: null;
-        timeansertrial: null;
+        timeteststart: null,
+        timetestfinish: null,
+
+        timetrialstart: null,
+        timetrialanswer: null, // [t1, t2, t3, t4]
+        timetrialfinish: null, // 
     },
     trialData: function(trialnumber = null, seqlength = null, span = null, sequence = null, answersequence = null, anstimes = null) {
         let obj = {}
@@ -296,11 +299,9 @@ var EventFunctions = {
             var element = icv[i];
             if (element.hidden == false) {
                 let _name = element.getAttribute('id');
-                console.log(_name);
                 let namestr = _name.slice(0, _name.length - 1);
                 let num = parseInt(_name[_name.length - 1]) + 1;
                 element.hidden = true;
-                console.log(namestr + num);
                 document.getElementById(namestr + num).hidden = false;
                 break;
             }

@@ -1,3 +1,6 @@
+/*Import font from google*/
+
+@import 'https://fonts.googleapis.com/css?family=Kanit|Prompt';
 :root {
     --probe-base-unit: min(calc(0.15*100vw), calc(0.15*100vh));
     --probe-span-radius: min(calc(0.2*100vw), calc(0.2*100vh));
@@ -16,7 +19,24 @@
 }
 
 html {
+    font-family: 'Prompt', sans-serif;
     background-color: var(--main-bg-color);
+}
+
+::placeholder {
+    font-family: 'Prompt', sans-serif;
+}
+
+button {
+    font-family: 'Prompt', sans-serif;
+}
+
+input {
+    font-family: 'Prompt', sans-serif;
+}
+
+select {
+    font-family: 'Prompt', sans-serif;
 }
 
 title {

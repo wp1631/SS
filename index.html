@@ -14,7 +14,7 @@
     <title>Spatial Span Game</title>
     <main>
         <div id="welcomeCanvas" class="welcomeCanvas">
-            <h1>Welocome</h1>
+            <h1>Place holder for some description for the project</h1>
             <p>
                 Helooooooasdoa
             </p>
@@ -25,17 +25,21 @@
                 <input type="radio" id='deny-consent' name="consent" value="deny" onclick="document.getElementById('consentSubmitButton').disabled=true">
                 <br>
                 <button id="consentSubmitButton" type='button' onclick="document.dispatchEvent(consentsubmitevent);" disabled>ถัดไป</button>
+                <div id="consentSubmitButtonDiv" class="consentSubmitButtonDiv">
+                    <button id="consentSubmitButton" type='button' onclick="document.dispatchEvent(consentsubmitevent);" disabled>ถัดไป</button>
+                </div>
             </form>
+            <br>
             <button onclick="document.dispatchEvent(testinitializeevent);" hidden>ShowTestCanvas</button>
         </div>
         <div id="preparationCanvas" class="preparationCanvas" hidden>
-            <form id="preparation-form" method="dialog">
+            <form id="preparation-form" method="dialog" onsubmit="document.dispatchEvent(preparationsubmitevent);">
                 <label for="fname>">ชื่อจริง (First name)</label>
                 <input type="text" id='fname' name="fname" placeholder="ชื่อจริง" minlength=1 maxlength=20 pattern="^[\u0E00-\u0E4Ea-zA-Z]{1,20}$" required><br>
                 <label for="mname>">ชื่อกลาง (Middle name)</label>
-                <input type="text" id='mname' name="mname" placeholder="ชื่อกลาง (ถ้ามี)" minlength="0" maxlength=2 pattern="[\u0E00-\u0E4Ea-zA-Z]{0,20}$"><br>
+                <input type="text" id='mname' name="mname" placeholder="ชื่อกลาง (ถ้ามี)" minlength="0" maxlength=2 pattern="^[\u0E00-\u0E4Ea-zA-Z]{0,20}$"><br>
                 <label for="lname>">นามสกุล (Last name)</label>
-                <input type="text" id='lname' name="lname" placeholder="นามสกุล" minlength=1 maxlength=20 pattern="[\u0E00-\u0E4Ea-zA-Z]{1,20}$" required><br>
+                <input type="text" id='lname' name="lname" placeholder="นามสกุล" minlength=1 maxlength=20 pattern="^[\u0E00-\u0E4Ea-zA-Z]{1,20}$" required><br>
                 <label for="dob">วันเกิด</label>
                 <input type='date' id="dob" name="dob" placeholder='1997/1/1' required><br>
                 <label for="testmode" hidden>รูปแบบการทดสอบ</label>
@@ -54,21 +58,21 @@
                     <option value= "Master degree">ปริญญาโท</option>
                     <option value= "Ph.D">ปริญญาเอก</option>
                 </select>
-                <button type="button" onclick="document.dispatchEvent(preparationsubmitevent);">ถัดไป</button>
+                <button type="submit">ถัดไป</button>
             </form>
         </div>
         <div id="instructionCanvas" class="instructionCanvas" hidden>
             <div id="instructionCanvas1">
-                1<br>
+                Placeholder for instruction: page 1<br>
                 <button type="button" onclick="document.dispatchEvent(instructionnextevent);">next</button>
             </div>
             <div id="instructionCanvas2" hidden>
-                2<br>
+                Placeholder for instruction: page 2<br>
                 <button type="button" onclick="document.dispatchEvent(instructionnextevent);">next</button>
             </div>
             <div id="instructionCanvas3" hidden>
-                3<br>
-                <button type="button" onclick="document.dispatchEvent(instructdemoevent); disabled">จำลองแบบทดสอบ</button>
+                Placeholder for instruction: page 3<br>
+                <button type="button" onclick="document.dispatchEvent(instructdemoevent);" disabled>จำลองแบบทดสอบ</button>
                 <button type="button" onclick="document.dispatchEvent(instructfinevent);">ทำการทดสอบจริงทันที</button>
             </div>
         </div>
