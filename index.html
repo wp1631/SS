@@ -16,15 +16,13 @@
         <div id="welcomeCanvas" class="welcomeCanvas">
             <h1>Place holder for some description for the project</h1>
             <p>
-                Helooooooasdoa
+                Placeholder for consent form
             </p>
             <form id="consent" method="dialog">
                 <label for="accept-consent">ยอมรับ</label>
                 <input type="radio" id='accept-consent' name="consent" value="accept" onclick="document.getElementById('consentSubmitButton').disabled=false">
                 <label for="deny-consent ">ไม่ยอมรับ</label>
                 <input type="radio" id='deny-consent' name="consent" value="deny" onclick="document.getElementById('consentSubmitButton').disabled=true">
-                <br>
-                <button id="consentSubmitButton" type='button' onclick="document.dispatchEvent(consentsubmitevent);" disabled>ถัดไป</button>
                 <div id="consentSubmitButtonDiv" class="consentSubmitButtonDiv">
                     <button id="consentSubmitButton" type='button' onclick="document.dispatchEvent(consentsubmitevent);" disabled>ถัดไป</button>
                 </div>

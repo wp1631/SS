@@ -204,7 +204,7 @@ main {
     border: 3px solid white;
 }
 
-#Probe1 {
+.conse #Probe1 {
     left: calc(50% - var(--probe-base-unit)/2.0);
     top: calc(50% - var(--probe-span-radius) - var(--probe-base-unit)/2.0);
 }

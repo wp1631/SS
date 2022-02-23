@@ -1,6 +1,8 @@
 const rampThresholdConsCorrect = 2;
 const defaultTimeout = 250;
 const defaultISI = 1000;
+const defaultISImode = 'const-interval';
+
 const defaultinitialspan = 2;
 const defaultmaxtrial = 20;
 const defaulttestmode = "1-up-2-down-half-switch-stag";
@@ -34,7 +36,7 @@ function main() {
 
     document.addEventListener('instruction-start', EventFunctions.onInstructionStart);
     document.addEventListener('instruction-next', EventFunctions.onInstructionNext);
-    document.addEventListener('instruction-finish',EventFunctions.onInstructionFinish);
+    document.addEventListener('instruction-finish', EventFunctions.onInstructionFinish);
 }
 
 var DynamicsContainer = {
@@ -53,6 +55,7 @@ var DynamicsContainer = {
         span: "",
         currTrial: 1,
         maxtrial: 20,
+        ISI = defaultISI,
         ISImode: null,
         probetimeout: null,
         probeflashmode: null,
@@ -67,16 +70,16 @@ var DynamicsContainer = {
         date: "",
         timestart: null,
     },
-    
+
     Timer: {
         timeteststart: null,
         timetestfinish: null,
 
         timetrialstart: null,
         timetrialanswer: null, // [t1, t2, t3, t4]
-        timetrialfinish: null, // 
+        timetrialfinish: null,
     },
-    trialData: function(trialnumber = null, seqlength = null, span = null, sequence = null, answersequence = null, anstimes = null, trialstart = null, trialfinish = null,) {
+    trialData: function(trialnumber = null, seqlength = null, span = null, sequence = null, answersequence = null, anstimes = null, trialstart = null, trialfinish = null) {
         let obj = {}
         obj.trialstart = trialstart;
         obj.trialfinish = trialfinish;
@@ -101,20 +104,45 @@ var DynamicsContainer = {
         maxtrial: null,
     },
 
-    sumTestData: function () {
-        
+    sumTestData: function(code = null, trialDataArr = null, testmode = defaulttestmode, ISImode = defaultISImode, ISI = defaultISI, probetimeout = defaultTimeout, maxtrial = defaultmaxtrial, iniseqlength = defaultinitialspan, timestamp_teststart, timestamp_testfinish) {
+        let obj = {}
+        obj.id = code || "Anonymous";
+        obj.date = now.toDateString();
+        obj.timestamp = mow.toTimeString();
+        obj.testdata = {
+            timestamp_teststart: timestamp_teststart,
+            timestamp_testfinish = timestamp_testfinish,
+            trialDataArr = trialDataArr,
+            testmode = testmode,
+            ISImode = ISImode,
+            ISI = ISI,
+            probetimeout = probetimeout,
+            maxtrial = maxtrial,
+            initialseqlength = iniseqlength,
+        }
+        let now = new Date()
+
+        return obj;
+    },
+    sumSensitiveContent: function(code, fname, mname, lname, date) {
+        let obj = {
+            id: code,
+            firstname: fname,
+            middlename: mname,
+            lastname: lname,
+            date: new Date().toISOString(),
+        }
+        return obj;
     }
-
-
 }
 
 //#region form validity
 function fnameValidation(object) {
     if (object.value === '') {
         object.setCustomValidity('กรุณากรอก ชื่อจริง\nPlease fill your firstname');
-    } else if (object.validity.typeMismatch){
+    } else if (object.validity.typeMismatch) {
         object.setCustomValidity('ชื่อจริง เป็นภาษาไทยหรือภาษาอังกฤษ ไม่มีเว้นวรรคและอักขระพิเศษ\nThai or English without spacings and special characters');
-    } else if (object.validity.patternMismatch){
+    } else if (object.validity.patternMismatch) {
         object.setCustomValidity('ชื่อจริง เป็นภาษาไทยหรือภาษาอังกฤษ ไม่มีเว้นวรรคและอักขระพิเศษ\nThai or English without spacings and special characters');
     } else {
         object.setCustomValidity('');
@@ -123,9 +151,9 @@ function fnameValidation(object) {
 }
 
 function mnameValidation(object) {
-    if (object.validity.typeMismatch){
+    if (object.validity.typeMismatch) {
         object.setCustomValidity('ชื่อกลาง เป็นภาษาไทยหรือภาษาอังกฤษ ไม่มีเว้นวรรคและอักขระพิเศษ\nThai or English without spacings and special characters');
-    } else if (object.validity.patternMismatch){
+    } else if (object.validity.patternMismatch) {
         object.setCustomValidity('ชื่อกลาง เป็นภาษาไทยหรือภาษาอังกฤษ ไม่มีเว้นวรรคและอักขระพิเศษ\nThai or English without spacings and special characters');
     } else {
         object.setCustomValidity('');
@@ -136,9 +164,9 @@ function mnameValidation(object) {
 function lnameValidation(object) {
     if (object.value === '') {
         object.setCustomValidity('กรุณากรอก นามสกุล\nPlease fill your lastname');
-    } else if (object.validity.typeMismatch){
+    } else if (object.validity.typeMismatch) {
         object.setCustomValidity('นามสกุล เป็นภาษาไทยหรือภาษาอังกฤษ ไม่มีเว้นวรรคและอักขระพิเศษ\nThai or English without spacings and special characters');
-    } else if (object.validity.patternMismatch){
+    } else if (object.validity.patternMismatch) {
         object.setCustomValidity('นามสกุล เป็นภาษาไทยหรือภาษาอังกฤษ ไม่มีเว้นวรรคและอักขระพิเศษ\nThai or English without spacings and special characters');
     } else {
         object.setCustomValidity('');
@@ -365,7 +393,7 @@ var EventFunctions = {
         document.getElementById('testCanvas').hidden = false;
         document.dispatchEvent(eventcontrollerinitiateevent);
     },
-    onEventControllerInitiation: function (e) {
+    onEventControllerInitiation: function(e) {
         document.dispatchEvent(teststartevent);
     }
 }
