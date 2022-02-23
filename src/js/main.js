@@ -37,6 +37,8 @@ function main() {
     document.addEventListener('instruction-start', EventFunctions.onInstructionStart);
     document.addEventListener('instruction-next', EventFunctions.onInstructionNext);
     document.addEventListener('instruction-finish', EventFunctions.onInstructionFinish);
+
+    document.addEventListener('eventcontroller-initiate', EventFunctions.onEventControllerInitiation);
 }
 
 var DynamicsContainer = {
@@ -45,50 +47,51 @@ var DynamicsContainer = {
         sequence: [],
         answersequence: [],
         span: null,
-        correct: null,
-        anstimes: []
     },
     EventController: {
-        initialseqlength: 2,
-        seqlength: 2,
-        timestart: 0,
-        span: "",
-        currTrial: 1,
-        maxtrial: 20,
+        initialseqlength: defaultinitialspan,
+        seqlength: defaultinitialspan,
+        timestart: null,
+        span: null,
+        currTrial: null,
+        maxtrial: defaultmaxtrial,
         ISI = defaultISI,
-        ISImode: null,
-        probetimeout: null,
-        probeflashmode: null,
-        testmode: null,
-        switchingFunc: function() {; },
+        ISImode: defaultISImode,
+        probetimeout: defaultTimeout,
+        probeflashmode: defaultISImode,
+        testmode: defaulttestmode,
+        switchingFunc: testmode ? switchingFuncGenerator(this.EventController.testmode): null,
     },
     identifiers: {
-        fname: "",
-        mname: "",
-        lname: "",
-        code: "",
-        date: "",
+        fname: null,
+        mname: null,
+        lname: null,
+        code: null,
+        date: null,
         timestart: null,
     },
 
     Timer: {
         timeteststart: null,
         timetestfinish: null,
-
         timetrialstart: null,
-        timetrialanswer: null, // [t1, t2, t3, t4]
+        timeprobestart: null,
+        timeprobeend: null,
+        timetrialanswer: null, // [t11, t12, t13, t4]
         timetrialfinish: null,
     },
-    trialData: function(trialnumber = null, seqlength = null, span = null, sequence = null, answersequence = null, anstimes = null, trialstart = null, trialfinish = null) {
+    trialData: function(trialnumber = null, seqlength = null, span = null, sequence = null, answersequence = null, anstimes = null,timetrialstart = null, timetrialfinish = null, timeprobestart = null, timeprobeend = null) {
         let obj = {}
-        obj.trialstart = trialstart;
-        obj.trialfinish = trialfinish;
+        obj.timetrialstart = timetrialstart;
+        obj.timetrialfinish = timetrialfinish;
+        obj.timeprobestart = timeprobestart;
+        obj.timeprobeend = timeprobeend;
         obj.trialnumber = trialnumber;
         obj.seqlength = seqlength;
         obj.span = span;
         obj.sequence = sequence;
         obj.answersequence = answersequence;
-        if (sequence == null) { obj.correct = null } else { obj.correct = MiscOperationFunction.compareSeq(sequence, answersequence) }
+        if (sequence == null) { obj.correct = null } else { obj.correct = MiscOperationFunction.compareSeq(sequence, MiscOperationFunction.revSeq(answersequence,span)) }
         obj.anstimes = anstimes;
         return obj;
     },
@@ -98,20 +101,31 @@ var DynamicsContainer = {
         spans: [],
         corrects: [],
         created: [],
-        testmode: null,
-        ISImode: null,
-        probetimeout: null,
-        maxtrial: null,
+        initialseqlength: defaultinitialspan,
+        testmode: defaulttestmode,
+        ISImode: defaultISImode,
+        probetimeout: defaultTimeout,
+        maxtrial: defaultmaxtrial,
     },
 
-    sumTestData: function(code = null, trialDataArr = null, testmode = defaulttestmode, ISImode = defaultISImode, ISI = defaultISI, probetimeout = defaultTimeout, maxtrial = defaultmaxtrial, iniseqlength = defaultinitialspan, timestamp_teststart, timestamp_testfinish) {
+    currentTrialData: function (seqlength = null,span = null){
+        let obj = {
+            seqlength:seqlength || DynamicsContainer.EventController.seqlength,
+            sequence: genSeq(seqlength),
+            asnswersequence: [],
+            span: span || DynamicsContainer.EventController.span,
+        }
+    },
+
+    sumTestData: function(code = null, trialDataArr = null, testmode = defaulttestmode, ISImode = defaultISImode, ISI = defaultISI, probetimeout = defaultTimeout, maxtrial = defaultmaxtrial, iniseqlength = defaultinitialspan, timestamp_teststart = null, timestamp_testfinish = null) {
         let obj = {}
+        let now = new Date();
         obj.id = code || "Anonymous";
         obj.date = now.toDateString();
-        obj.timestamp = mow.toTimeString();
+        obj.timestamp = now.toTimeString();
         obj.testdata = {
-            timestamp_teststart: timestamp_teststart,
-            timestamp_testfinish = timestamp_testfinish,
+            timestamp_teststart: null || timestamp_teststart,
+            timestamp_testfinish = null || timestamp_testfinish,
             trialDataArr = trialDataArr,
             testmode = testmode,
             ISImode = ISImode,
@@ -120,17 +134,16 @@ var DynamicsContainer = {
             maxtrial = maxtrial,
             initialseqlength = iniseqlength,
         }
-        let now = new Date()
 
         return obj;
     },
-    sumSensitiveContent: function(code, fname, mname, lname, date) {
+    sumSensitiveContent: function(code = null, fname = null, mname = null, lname = null, date = null) {
         let obj = {
-            id: code,
-            firstname: fname,
-            middlename: mname,
-            lastname: lname,
-            date: new Date().toISOString(),
+            id: code || "Anonymous",
+            firstname: fname || "Anoynymous",
+            middlename: mname==="" ? "":null,
+            lastname: lname || "Anonymous",
+            date: date || new Date().toISOString(),
         }
         return obj;
     }
@@ -205,17 +218,6 @@ function dynamicUpdate(dynamicscontainer, promptupdate) {
     }
 }
 
-function promptNewTrial(dynamicscontainer) {
-    let currtrial = dynamicscontainer.currTrialData;
-    let eventcontroller = dynamicscontainer.EventController;
-    currtrial.seqlength = eventcontroller.seqlength;
-    currtrial.sequence = genSeq(currtrial.seqlength);
-    currtrial.answersequence = [];
-    currtrial.span = eventcontroller.span;
-    correct = null;
-    anstimes = [];
-}
-
 function switchingFuncGenerator(testmode) {
     switch (testmode) {
         case "1-up-2-down-no-switch-forward-stag": //only forward
@@ -224,10 +226,10 @@ function switchingFuncGenerator(testmode) {
             break;
         case "1-up-2-down-half-switch-stag": // First half forward then backward with stagnation
             function res_func(dynamicscontainer) {
-                let corr = dynamicscontainer.testContainer.corrects;
-                let sp = dynamicscontainer.testContainer.spans;
-                let length = sp.length;
-                let promtupdate = {};
+                var corr = dynamicscontainer.testContainer.corrects;
+                var sp = dynamicscontainer.testContainer.spans;
+                var length = sp.length;
+                var promptupdate = {};
                 //#region span check
                 if (length > 2) {
                     if (sp.includes('backward')) {
@@ -244,6 +246,7 @@ function switchingFuncGenerator(testmode) {
                                                     promtupdate.seqlength = 'up';
                                                 } else {
                                                     document.dispatchEvent(sessionendevent);
+                                                    document.dispatchEvent(testfinevent);
                                                 }
                                             } else if (corr[length - 1] || corr[length - 2]) {
                                                 promtupdate.seqlength = 'up';
@@ -255,6 +258,7 @@ function switchingFuncGenerator(testmode) {
                                     case 1: //odd
                                         if (corr[length - 1] && (corr[length - 2] == false) && (corr[length - 3] == false)) {
                                             document.dispatchEvent(sessionendevent);
+                                            document.dispatchEvent(testfinevent);
                                         }
                                         break;
                                 }
@@ -271,6 +275,7 @@ function switchingFuncGenerator(testmode) {
                                 case 1: // odd
                                     //signal sessionend for first correct after long consecutive false
                                     if (corr[length - 1] && (corr[length - 2] == false) && (corr[length - 3] == false)) {
+                                        promptupdate.span='reverse'
                                         document.dispatchEvent(sessionendevent);
                                     }
                                     break;
@@ -280,6 +285,7 @@ function switchingFuncGenerator(testmode) {
                                             if (corr[length - 2]) {
                                                 promtupdate.seqlength = 'up';
                                             } else {
+                                                promptupdate.span='reverse';
                                                 document.dispatchEvent(sessionendevent);
                                             }
                                         } else if (corr[length - 1] || corr[length - 2]) {
@@ -296,6 +302,7 @@ function switchingFuncGenerator(testmode) {
                     }
                 }
                 //#endregion
+                return promptupdate;
             }
         case "default-ramp-switch-stag": // ramp-switch with default parameters
             break;
@@ -314,7 +321,7 @@ var EventFunctions = {
     forProbeClick: function(e) {
         SelectProbe(e.target);
         if (CheckTrialFinish()) {
-            setPlayMode("off");
+            document.dispatchEvent(trialfinevent);
         }
     },
     onTrialFinish: function(e) {
@@ -342,7 +349,6 @@ var EventFunctions = {
         id.lname = formobj.elements['lname'].value;
         id.code = sha256(id.fname + " " + id.mname + " " + id.lname);
         id.date = time.toDateString();
-        id.timestart = time.toTimeString();
 
         document.getElementById('preparationCanvas').hidden = true;
         console.log(id);
@@ -394,13 +400,56 @@ var EventFunctions = {
         document.dispatchEvent(eventcontrollerinitiateevent);
     },
     onEventControllerInitiation: function(e) {
-        document.dispatchEvent(teststartevent);
-    }
-}
+        /**
+         * Prep ECL
+         * >>EventController initiate by copy values from option section (Not implemented)
+         * >>Generate Update function
+         * >>Generate sumSensitiveContents
+         * >>Ready
+        **/
+       DynamicsContainer.EventController.switchingFunc = switchingFuncGenerator(DynamicsContainer.EventController.testmode);
+       DynamicsContainer.sumSensitiveContent = new DynamicsContainer.sumSensitiveContent(
+                                                                                    DynamicsContainer.identifiers.code,
+                                                                                    DynamicsContainer.identifiers.fname,
+                                                                                    DynamicsContainer.identifiers.mname,
+                                                                                    DynamicsContainer.identifiers.lname,
+                                                                                    new Date().toDateString()
+                                                                             )
+       document.dispatchEvent(teststartevent);
+    },
+    onTestStart: function (e) {
+        //Log starting time
+        let tnow =new Date().toTimeString()
+        DynamicsContainer.Timer.timeteststart = tnow;
+        DynamicsContainer.identifiers.timestart = tnow;
+        DynamicsContainer.currTrialData = new DynamicsContainer.currentTrialData();
+    },
+    onTrialStart: function (e) {
+        //Initialization
+        var useTrial = DynamicsContainer.currTrialData;
+        var timer = DynamicsContainer.Timer;
+        var ecl = DynamicsContainer.EventController;
+        timer.timetrialstart = new Date().toTimeString();
+        
+        timer.timeprobestart = new Date().toTimeString();
+        sequenceFlash(useTrial.currTrial,ecl.ISImode,ecl.ISI);
+        timer.timeprobeend = new Date().toTimeString();
+        setPlayMode('on');
+    },
 
-function testinitializer(testmode) {
-
-
+    onTrialFinish: function (e) {
+        var useTrial = DynamicsContainer.currTrialData;
+        var timer = DynamicsContainer.Timer;
+        var ecl = DynamicsContainer.EventController;
+        var container = DynamicsContainer.testContainer;
+        timer.timetrialfinish = new Date().toTimeString();
+        setPlayMode('off')
+        //(Not implemented)Push data to testContainer 
+        container.
+        //(Not implemented)Calculate updateparameter (If testend signal trigger testend)
+        //(Not implemented)Update ecl according to updateparameter
+        //(Not implemented)Dispatch next-trial event trigger onTrialStart
+    } 
 }
 
 function SelectProbe(object) {
@@ -629,14 +678,21 @@ MiscOperationFunction = {
             return result;
         },
         revSeq: (seq, rev) => {
-            if (~rev) {
+            if (rev == 'forward') {
                 return seq;
-            } else if (rev) {
+            } else if (rev == 'backward') {
                 return seq.reverse();
             } else {
                 throw EvalError;
             }
         },
+        sleep : (milliseconds) {
+            const date = Date.now();
+            let currentDate = null;
+            do {
+              currentDate = Date.now();
+            } while (currentDate - date < milliseconds);
+        }
     }
     //#endregion
 
