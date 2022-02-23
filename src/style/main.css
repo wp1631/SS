@@ -1,16 +1,42 @@
+/*Import font from google*/
+
+@import 'https://fonts.googleapis.com/css?family=Kanit|Prompt';
 :root {
-    --probe-base-unit: 120px;
-    --probe-span-radius: 200px;
+    --probe-base-unit: min(calc(0.15*100vw), calc(0.15*100vh));
+    --probe-span-radius: min(calc(0.2*100vw), calc(0.2*100vh));
     --cos30: 0.86602540378;
     --sin30: 0.5;
     --crosshair-color: black;
-    --crosshair-length: 40px;
-    --crosshair-width: 5px;
+    --crosshair-length: max(20px, calc(var(--probe-span-radius)/3.0));
+    --crosshair-width: max(5px, calc(var(--probe-span-radius)/24.0));
     --main-bg-color: rgb(126, 126, 126);
+    --canvas-width: 75%;
+    --canvas-height: 80%;
+    --backgroundcolor-forward: rgb(102, 228, 102);
+    --backgroundcolor-backward: rgb(252, 42, 105);
+    --backgroundcolor-neutral: rgb(189, 189, 189);
+    --canvas-radii: 5%;
 }
 
 html {
+    font-family: 'Prompt', sans-serif;
     background-color: var(--main-bg-color);
+}
+
+::placeholder {
+    font-family: 'Prompt', sans-serif;
+}
+
+button {
+    font-family: 'Prompt', sans-serif;
+}
+
+input {
+    font-family: 'Prompt', sans-serif;
+}
+
+select {
+    font-family: 'Prompt', sans-serif;
 }
 
 title {
@@ -38,17 +64,46 @@ main {
     height: 85vh;
 }
 
+.welcomeCanvas {
+    position: relative;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
+    margin: 0 5%;
+    border: 5px solid red;
+    background-color: bisque;
+    margin: 0 auto;
+    border-radius: var(--canvas-radii);
+}
+
+.preparationCanvas {
+    position: relative;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
+    margin: 0 5%;
+    border: 5px solid red;
+    background-color: bisque;
+    margin: 0 auto;
+    border-radius: var(--canvas-radii);
+}
+
 .instructionCanvas {
     position: relative;
     text-align: center;
     justify-content: center;
     align-items: center;
-    width: 75%;
-    height: 85%;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
     margin: 0 5%;
-    border: 10px solid red;
+    border: 5px solid red;
     background-color: bisque;
     margin: 0 auto;
+    border-radius: var(--canvas-radii);
 }
 
 .testCanvas {
@@ -56,11 +111,51 @@ main {
     text-align: center;
     justify-content: center;
     align-items: center;
-    width: 75%;
-    height: 85%;
-    border: 10px solid red;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
+    border: 5px solid red;
     background-color: bisque;
     margin: 0 auto;
+    border-radius: var(--canvas-radii);
+}
+
+.testCanvas-forward {
+    position: relative;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
+    border: 5px solid red;
+    background-color: var(--backgroundcolor-forward);
+    margin: 0 auto;
+    border-radius: var(--canvas-radii);
+}
+
+.testCanvas-backward {
+    position: relative;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
+    border: 5px solid red;
+    background-color: var(--backgroundcolor-backward);
+    margin: 0 auto;
+    border-radius: var(--canvas-radii);
+}
+
+.testCanvas-neutral {
+    position: relative;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    width: var(--canvas-width);
+    height: var(--canvas-height);
+    border: 5px solid red;
+    background-color: var(--backgroundcolor-neutral);
+    margin: 0 auto;
+    border-radius: var(--canvas-radii);
 }
 
 .Probe {
@@ -109,7 +204,7 @@ main {
     border: 3px solid white;
 }
 
-#Probe1 {
+.conse #Probe1 {
     left: calc(50% - var(--probe-base-unit)/2.0);
     top: calc(50% - var(--probe-span-radius) - var(--probe-base-unit)/2.0);
 }

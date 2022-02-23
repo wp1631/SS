@@ -1,56 +1,111 @@
 <!DOCTYPE html>
-<meta name="viewport" content="width=device-width,height = device-height, initial-scale=1.0">
-<meta charset="utf-8">
-<header>
-    <title>Spatial Span Game</title>
+<html lang='th'>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,height = device-height, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="./src/favicon/chat.png">
     <link rel='stylesheet' href="./src/style/main.css">
     <script type="text/javascript" src="./src/js/main.js"></script>
     <script type="text/javascript" src="./src/js/sha256.js"></script>
-</header>
-</header>
+</head>
 
-<main>
-    <div id="welcomeCanvas" class="instructionCanvas">
-        <h1>Welocome</h1>
-        <p>
-            Helooooooasdoasodsadsakdl;ksa;ldkas;lkd;lsakdl;sadsajhfjasbfhdjsbcvhsdbcseybcyesbghcuysebfjdhbfdhjsbcjh
-        </p>
-        <button onclick="setPlayMode()">ShowTestCanvas</button>
-    </div>
-    <div id="testCanvas" class="testCanvas" hidden>
-        <div class="Crosshair" id="Crosshair1"></div>
-        <div class="Crosshair" id="Crosshair2"></div>
-        <div class="Probe" id='Probe1' ">
-            1
+<body>
+    <title>Spatial Span Game</title>
+    <main>
+        <div id="welcomeCanvas" class="welcomeCanvas">
+            <h1>Place holder for some description for the project</h1>
+            <p>
+                Placeholder for consent form
+            </p>
+            <form id="consent" method="dialog">
+                <label for="accept-consent">ยอมรับ</label>
+                <input type="radio" id='accept-consent' name="consent" value="accept" onclick="document.getElementById('consentSubmitButton').disabled=false">
+                <label for="deny-consent ">ไม่ยอมรับ</label>
+                <input type="radio" id='deny-consent' name="consent" value="deny" onclick="document.getElementById('consentSubmitButton').disabled=true">
+                <div id="consentSubmitButtonDiv" class="consentSubmitButtonDiv">
+                    <button id="consentSubmitButton" type='button' onclick="document.dispatchEvent(consentsubmitevent);" disabled>ถัดไป</button>
+                </div>
+            </form>
+            <br>
+            <button onclick="document.dispatchEvent(testinitializeevent);" hidden>ShowTestCanvas</button>
         </div>
-        <div class="Probe " id='Probe2'>
-            2
+        <div id="preparationCanvas" class="preparationCanvas" hidden>
+            <form id="preparation-form" method="dialog" onsubmit="document.dispatchEvent(preparationsubmitevent);">
+                <label for="fname>">ชื่อจริง (First name)</label>
+                <input type="text" id='fname' name="fname" placeholder="ชื่อจริง" minlength=1 maxlength=20 pattern="^[\u0E00-\u0E4Ea-zA-Z]{1,20}$" oninput="fnameValidation(this);" oninvalid="fnameValidation(this)" required><br>
+                <label for="mname>">ชื่อกลาง (Middle name)</label>
+                <input type="text" id='mname' name="mname" placeholder="ชื่อกลาง (ถ้ามี)" minlength="0" maxlength=2 pattern="^[\u0E00-\u0E4Ea-zA-Z]{0,20}$" oninput="mnameValidation(this);" oninvalid="mnameValidation(this)"><br>
+                <label for="lname>">นามสกุล (Last name)</label>
+                <input type="text" id='lname' name="lname" placeholder="นามสกุล" minlength=1 maxlength=20 pattern="^[\u0E00-\u0E4Ea-zA-Z]{1,20}$" oninput="lnameValidation(this);" oninvalid="lnameValidation(this)" required><br>
+                <label for="dob">วันเกิด</label>
+                <input type='date' id="dob" name="dob" placeholder='1997/1/1' required><br>
+                <label for="testmode" hidden>รูปแบบการทดสอบ</label>
+                <select id='testmode' name='testmode' hidden>
+                    <option value = '1-up-2-down-half-switch-stag' selected="selected">โหมดปกติ<br></option>
+                </select>
+                <label for="education">ระดับการศึกษาสูงสุด</label>
+                <select id='education' name='education' required>
+                    <option value = 'No-participation in educational service'>ไม่ได้เข้าศึกษา</option>
+                    <option value = 'Kindergarten'>อนุบาลศึกษา</option>
+                    <option value = "Primary school">ประถมศึกษา</option>
+                    <option value = "Junior highschool">มัธยมศึกษาตอนต้น</option>
+                    <option value = 'Highschool'>มัธยมศึกษาตอนปลาย</option>
+                    <option value = 'diploma'>อนุปริญญา</option>
+                    <option value= "Bachelor degree">ปริญญาตรี</option>
+                    <option value= "Master degree">ปริญญาโท</option>
+                    <option value= "Ph.D">ปริญญาเอก</option>
+                </select>
+                <button type="submit">ถัดไป</button>
+            </form>
         </div>
-        <div class="Probe " id='Probe3'>
-            3
+        <div id="instructionCanvas" class="instructionCanvas" hidden>
+            <div id="instructionCanvas1">
+                Placeholder for instruction: page 1<br>
+                <button type="button" onclick="document.dispatchEvent(instructionnextevent);">next</button>
+            </div>
+            <div id="instructionCanvas2" hidden>
+                Placeholder for instruction: page 2<br>
+                <button type="button" onclick="document.dispatchEvent(instructionnextevent);">next</button>
+            </div>
+            <div id="instructionCanvas3" hidden>
+                Placeholder for instruction: page 3<br>
+                <button type="button" onclick="document.dispatchEvent(instructdemoevent);" disabled>จำลองแบบทดสอบ</button>
+                <button type="button" onclick="document.dispatchEvent(instructfinevent);">ทำการทดสอบจริงทันที</button>
+            </div>
         </div>
-        <div class="Probe " id='Probe4'>
-            4
+        <div id="testCanvas" class="testCanvas" hidden>
+            <div class="Crosshair" id="Crosshair1"></div>
+            <div class="Crosshair" id="Crosshair2"></div>
+            <div class="Probe" id='Probe1'>
+                1
+            </div>
+            <div class="Probe " id='Probe2'>
+                2
+            </div>
+            <div class="Probe " id='Probe3'>
+                3
+            </div>
+            <div class="Probe " id='Probe4'>
+                4
+            </div>
+            <div class="Probe " id='Probe5'>
+                5
+            </div>
+            <div class="Probe " id='Probe6'>
+                6
+            </div>
         </div>
-        <div class="Probe " id='Probe5'>
-            5
-        </div>
-        <div class="Probe " id='Probe6'>
-            6
-        </div>
-    </div>
-    <div id = "instructionCanvas " class = 'instructionCanvas' hidden>
-    </div>
-</main>
+    </main>
+    <footer>
+        <b>
+            Chulalongkorn Cognitive Clinical and Computational Neuroscience Research Unit
+        </b> est. 2020
+        <a href="https://cccnlab.github.io/ " target="_blank ">
+            visit us
+        </a>
+    </footer>
+</body>
 
-<footer>
-    <b>
-        Chulalongkorn Cognitive Clinical and Computational Neuroscience Research Unit
-    </b> est. 2020
-    <a href="https://cccnlab.github.io/ " target="_blank ">
-        visit us
-    </a>
-</footer>
 
 </html>
