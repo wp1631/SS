@@ -39,18 +39,30 @@ select {
     font-family: 'Prompt', sans-serif;
 }
 
-title {
-    display: block;
+body>h1 {
+    display: flex;
+    height: 3em;
+    width: max-content;
     text-align: center;
-    font-size: 50px;
+    font-size: 2rem;
     color: azure;
     margin: 0 auto;
+    margin-top: 2rem;
+}
+
+#welcomeCanvas>h1 {
+    font-size: large;
+}
+
+#hidden {
+    display: none;
 }
 
 header {
+    font-size: medium;
     display: flex;
     width: 80%;
-    height: 5em;
+    height: 3em;
     margin: auto;
     justify-content: center;
 }
@@ -85,11 +97,28 @@ main {
     align-items: center;
     width: var(--canvas-width);
     height: var(--canvas-height);
-    margin: 0 5%;
+    margin: 5% 5%;
+    padding: 5% 5%;
     border: 5px solid red;
     background-color: bisque;
     margin: 0 auto;
     border-radius: var(--canvas-radii);
+}
+
+.preparationCanvas>h1 {
+    font-size: large;
+    display: contents;
+}
+
+.preparationCanvas>h2 {
+    font-size: medium;
+}
+
+.preparationCanvas>form {
+    font-size: small;
+    display: contents;
+    margin-top: 7%;
+    line-height: 2em;
 }
 
 .instructionCanvas {
@@ -107,7 +136,9 @@ main {
 }
 
 .testCanvas {
-    position: relative;
+    position: fixed;
+    left: calc(50% - var(--canvas-width)/2.0);
+    top: calc(50% - var(--canvas-height)/2.0);
     text-align: center;
     justify-content: center;
     align-items: center;
@@ -120,26 +151,30 @@ main {
 }
 
 .testCanvas-forward {
-    position: relative;
+    position: fixed;
+    left: calc(50% - var(--canvas-width)/2.0);
+    top: calc(50% - var(--canvas-height)/2.0);
     text-align: center;
     justify-content: center;
     align-items: center;
     width: var(--canvas-width);
     height: var(--canvas-height);
-    border: 5px solid red;
+    border: 5px solid rgb(152, 207, 152);
     background-color: var(--backgroundcolor-forward);
     margin: 0 auto;
     border-radius: var(--canvas-radii);
 }
 
 .testCanvas-backward {
-    position: relative;
+    position: fixed;
+    left: calc(50% - var(--canvas-width)/2.0);
+    top: calc(50% - var(--canvas-height)/2.0);
     text-align: center;
     justify-content: center;
     align-items: center;
     width: var(--canvas-width);
     height: var(--canvas-height);
-    border: 5px solid red;
+    border: 5px solid rgba(255, 26, 57, 0.685);
     background-color: var(--backgroundcolor-backward);
     margin: 0 auto;
     border-radius: var(--canvas-radii);
@@ -147,12 +182,14 @@ main {
 
 .testCanvas-neutral {
     position: relative;
+    left: calc(50% - var(--canvas-width)/2.0);
+    top: calc(50% - var(--canvas-height)/2.0);
     text-align: center;
     justify-content: center;
     align-items: center;
     width: var(--canvas-width);
     height: var(--canvas-height);
-    border: 5px solid red;
+    border: 5px solid rgb(212, 212, 212);
     background-color: var(--backgroundcolor-neutral);
     margin: 0 auto;
     border-radius: var(--canvas-radii);
@@ -191,7 +228,8 @@ main {
 }
 
 .Probe-flashing-backward {
-    background-color: yellowgreen;
+    background-color: red;
+    position: absolute;
     display: block;
     width: var(--probe-base-unit);
     line-height: var(--probe-base-unit);
@@ -199,12 +237,25 @@ main {
     border-radius: 50%;
     padding: 0;
     margin: 0;
-    vertical-align: middle;
     text-align: center;
     border: 3px solid white;
 }
 
-.conse #Probe1 {
+.Probe-flashing-click {
+    background-color: rgb(68, 170, 230);
+    position: absolute;
+    display: block;
+    width: var(--probe-base-unit);
+    line-height: var(--probe-base-unit);
+    height: var(--probe-base-unit);
+    border-radius: 50%;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    border: 3px solid white;
+}
+
+#Probe1 {
     left: calc(50% - var(--probe-base-unit)/2.0);
     top: calc(50% - var(--probe-span-radius) - var(--probe-base-unit)/2.0);
 }
@@ -272,7 +323,7 @@ footer>a {
     font-style: normal;
     text-decoration: none;
     color: black;
-    display: flexbox;
+    display: none;
     line-height: 1.5em;
     padding: 2px;
     background-color: beige;
@@ -281,9 +332,30 @@ footer>a {
 
 footer>a:hover {
     background-color: burlywood;
+    display: none;
 }
 
 footer {
+    display: flex;
+    justify-content: center;
+    font-size: x-small;
+    flex-direction: row;
+    align-items: center;
     position: fixed;
-    bottom: 2em;
+    border: 5px solid rgb(104, 104, 250);
+    bottom: 0;
+    margin: 0;
+    padding: 0%;
+    width: 100%;
+    height: 5px;
+    background-color: rgb(104, 104, 250);
+    color: aliceblue;
+    text-align: center;
+    flex-wrap: wrap;
+    text-overflow: ellipsis;
+}
+
+footer:hover {
+    height: 3em;
+    transition: 0.3s;
 }
