@@ -20,10 +20,12 @@ const instructfinevent = new Event('instruction-finish');
 
 const eventcontrollerinitiateevent = new Event('eventcontroller-initiate');
 const teststartevent = new Event('test-start');
-const nextrialevent = new Event('next-trial');
+const trialstartevent = new Event('trial-start');
+const nextrialevent = new Event('trial-next');
 const trialfinevent = new Event('trial-finish');
 const sessionendevent = new Event('session-end');
 const testfinevent = new Event('test-finish');
+const sequenceflashfinish = new Event('sequential-flash-finish')
 
 function main() {
     document.addEventListener('consent-submit', EventFunctions.onConsentSubmit);
@@ -31,12 +33,18 @@ function main() {
     document.addEventListener('preparation-submit', EventFunctions.onPreparationSubmit);
 
     document.addEventListener('test-initialized', EventFunctions.onTestintitialized);
+    document.addEventListener('test-start', EventFunctions.onTestStart);
+    document.addEventListener('trial-start', EventFunctions.onTrialStart);
+    document.addEventListener('trial-next', EventFunctions.onTrialStart);
+    document.addEventListener('sequential-flash-finish', EventFunctions.toPlay);
     document.addEventListener('trial-finish', EventFunctions.onTrialFinish);
     document.addEventListener('test-finish', EventFunctions.onTestFinish);
 
     document.addEventListener('instruction-start', EventFunctions.onInstructionStart);
     document.addEventListener('instruction-next', EventFunctions.onInstructionNext);
     document.addEventListener('instruction-finish', EventFunctions.onInstructionFinish);
+
+    document.addEventListener('eventcontroller-initiate', EventFunctions.onEventControllerInitiation);
 }
 
 var DynamicsContainer = {
@@ -45,51 +53,56 @@ var DynamicsContainer = {
         sequence: [],
         answersequence: [],
         span: null,
-        correct: null,
-        anstimes: []
     },
     EventController: {
-        initialseqlength: 2,
-        seqlength: 2,
-        timestart: 0,
-        span: "",
+        initialseqlength: defaultinitialspan,
+        seqlength: defaultinitialspan,
+        span: 'forward',
         currTrial: 1,
-        maxtrial: 20,
-        ISI = defaultISI,
-        ISImode: null,
-        probetimeout: null,
-        probeflashmode: null,
-        testmode: null,
-        switchingFunc: function() {; },
+        maxtrial: defaultmaxtrial,
+        ISI: defaultISI,
+        ISImode: defaultISImode,
+        probetimeout: defaultTimeout,
+        probeflashmode: defaultISImode,
+        testmode: defaulttestmode,
+        switchingFunc: switchingFuncGenerator(defaulttestmode),
     },
     identifiers: {
-        fname: "",
-        mname: "",
-        lname: "",
-        code: "",
-        date: "",
+        fname: null,
+        mname: null,
+        lname: null,
+        code: null,
+        date: null,
         timestart: null,
     },
 
     Timer: {
         timeteststart: null,
         timetestfinish: null,
-
         timetrialstart: null,
-        timetrialanswer: null, // [t1, t2, t3, t4]
+        timeprobestart: null,
+        timeprobeend: null,
+        timetrialanswer: [], // [t11, t12, t13, t4]
         timetrialfinish: null,
     },
-    trialData: function(trialnumber = null, seqlength = null, span = null, sequence = null, answersequence = null, anstimes = null, trialstart = null, trialfinish = null) {
-        let obj = {}
-        obj.trialstart = trialstart;
-        obj.trialfinish = trialfinish;
+
+    trialData: function(trialnumber = null, seqlength = null, span = null, sequence = null, answersequence = null, anstimes = null, timetrialstart = null, timetrialfinish = null, timeprobestart = null, timeprobeend = null) {
+        var obj = {};
+        obj.timetrialstart = timetrialstart;
+        obj.timetrialfinish = timetrialfinish;
+        obj.timeprobestart = timeprobestart;
+        obj.timeprobeend = timeprobeend;
         obj.trialnumber = trialnumber;
         obj.seqlength = seqlength;
         obj.span = span;
         obj.sequence = sequence;
         obj.answersequence = answersequence;
-        if (sequence == null) { obj.correct = null } else { obj.correct = MiscOperationFunction.compareSeq(sequence, answersequence) }
         obj.anstimes = anstimes;
+        if (sequence === null) {
+            obj.correct = null;
+        } else {
+            obj.correct = MiscOperationFunction.compareSeq(sequence, MiscOperationFunction.revSeq(answersequence, span));
+        }
         return obj;
     },
 
@@ -98,39 +111,50 @@ var DynamicsContainer = {
         spans: [],
         corrects: [],
         created: [],
-        testmode: null,
-        ISImode: null,
-        probetimeout: null,
-        maxtrial: null,
+        initialseqlength: defaultinitialspan,
+        testmode: defaulttestmode,
+        ISImode: defaultISImode,
+        probetimeout: defaultTimeout,
+        maxtrial: defaultmaxtrial,
     },
 
-    sumTestData: function(code = null, trialDataArr = null, testmode = defaulttestmode, ISImode = defaultISImode, ISI = defaultISI, probetimeout = defaultTimeout, maxtrial = defaultmaxtrial, iniseqlength = defaultinitialspan, timestamp_teststart, timestamp_testfinish) {
+    currentTrialData: function(seqlength = null, span = null) {
+        let obj = {
+            seqlength: seqlength || DynamicsContainer.EventController.seqlength,
+            answersequence: [],
+            span: span || DynamicsContainer.EventController.span,
+        }
+        obj.sequence = genSeq(obj.seqlength);
+        return obj;
+    },
+
+    sumTestData: function(code = null, trialDataArr = null, testmode = defaulttestmode, ISImode = defaultISImode, ISI = defaultISI, probetimeout = defaultTimeout, maxtrial = defaultmaxtrial, iniseqlength = defaultinitialspan, timestamp_teststart = null, timestamp_testfinish = null) {
         let obj = {}
+        let now = new Date();
         obj.id = code || "Anonymous";
         obj.date = now.toDateString();
-        obj.timestamp = mow.toTimeString();
+        obj.timestamp = now.toTimeString();
         obj.testdata = {
-            timestamp_teststart: timestamp_teststart,
-            timestamp_testfinish = timestamp_testfinish,
-            trialDataArr = trialDataArr,
-            testmode = testmode,
-            ISImode = ISImode,
-            ISI = ISI,
-            probetimeout = probetimeout,
-            maxtrial = maxtrial,
-            initialseqlength = iniseqlength,
+            timestamp_teststart: null || timestamp_teststart,
+            timestamp_testfinish: null || timestamp_testfinish,
+            trialDataArr: trialDataArr,
+            testmode: testmode,
+            ISImode: ISImode,
+            ISI: ISI,
+            probetimeout: probetimeout,
+            maxtrial: maxtrial,
+            initialseqlength: iniseqlength,
         }
-        let now = new Date()
 
         return obj;
     },
-    sumSensitiveContent: function(code, fname, mname, lname, date) {
+    sumSensitiveContent: function(code = null, fname = null, mname = null, lname = null, date = null) {
         let obj = {
-            id: code,
-            firstname: fname,
-            middlename: mname,
-            lastname: lname,
-            date: new Date().toISOString(),
+            id: code || "Anonymous",
+            firstname: fname || "Anoynymous",
+            middlename: mname === "" ? "" : null,
+            lastname: lname || "Anonymous",
+            date: date || new Date().toISOString(),
         }
         return obj;
     }
@@ -175,8 +199,9 @@ function lnameValidation(object) {
 }
 //#endregion 
 
-function dynamicUpdate(dynamicscontainer, promptupdate) {
-    var ecl = dynamicscontainer.EventController;
+function dynamicUpdate(promptupdate) {
+    var ecl = DynamicsContainer.EventController;
+    ecl.currTrial += 1;
     if (promptupdate.seqlength) {
         switch (promptupdate.seqlength) {
             case 'up':
@@ -205,17 +230,6 @@ function dynamicUpdate(dynamicscontainer, promptupdate) {
     }
 }
 
-function promptNewTrial(dynamicscontainer) {
-    let currtrial = dynamicscontainer.currTrialData;
-    let eventcontroller = dynamicscontainer.EventController;
-    currtrial.seqlength = eventcontroller.seqlength;
-    currtrial.sequence = genSeq(currtrial.seqlength);
-    currtrial.answersequence = [];
-    currtrial.span = eventcontroller.span;
-    correct = null;
-    anstimes = [];
-}
-
 function switchingFuncGenerator(testmode) {
     switch (testmode) {
         case "1-up-2-down-no-switch-forward-stag": //only forward
@@ -224,37 +238,35 @@ function switchingFuncGenerator(testmode) {
             break;
         case "1-up-2-down-half-switch-stag": // First half forward then backward with stagnation
             function res_func(dynamicscontainer) {
-                let corr = dynamicscontainer.testContainer.corrects;
-                let sp = dynamicscontainer.testContainer.spans;
-                let length = sp.length;
-                let promtupdate = {};
+                var corr = dynamicscontainer.testContainer.corrects;
+                var sp = dynamicscontainer.testContainer.spans;
+                var length = sp.length;
+                var promptupdate = {};
                 //#region span check
-                if (length > 2) {
+                if (length > 1) {
                     if (sp.includes('backward')) {
-                        let ll = length - sp.lastIndexOf('forward');
-                        if (ll > 3) {
+                        var ll = length - sp.lastIndexOf('forward');
+                        if (ll >= 3) {
                             if (length - ll == 21) {
                                 document.dispatchEvent(sessionendevent);
                             } else if (length - ll < 22) {
                                 switch (ll % 2) {
                                     case 0: //even
-                                        if (corr[length - 1]) {
-                                            if ((corr[length - 3] == false) && (corr[length - 4] == false)) {
-                                                if (corr[length - 2]) {
-                                                    promtupdate.seqlength = 'up';
-                                                } else {
-                                                    document.dispatchEvent(sessionendevent);
-                                                }
-                                            } else if (corr[length - 1] || corr[length - 2]) {
-                                                promtupdate.seqlength = 'up';
-                                            } else {
-                                                //Do nothing
-                                            }
+                                        if (corr[length - 1] || corr[length - 2]) {
+                                            promptupdate.seqlength = 'up';
+                                        } else if ((corr[length - 3] == false) && (corr[length - 4] == false)) {
+                                            console.log('down')
+                                            promptupdate.span = 'reverse';
+                                            document.dispatchEvent(sessionendevent);
+                                            document.dispatchEvent(testfinevent);
                                         }
                                         break;
                                     case 1: //odd
                                         if (corr[length - 1] && (corr[length - 2] == false) && (corr[length - 3] == false)) {
+                                            console.log('down')
+                                            promptupdate.span = 'reverse';
                                             document.dispatchEvent(sessionendevent);
+                                            document.dispatchEvent(testfinevent);
                                         }
                                         break;
                                 }
@@ -271,22 +283,16 @@ function switchingFuncGenerator(testmode) {
                                 case 1: // odd
                                     //signal sessionend for first correct after long consecutive false
                                     if (corr[length - 1] && (corr[length - 2] == false) && (corr[length - 3] == false)) {
+                                        promptupdate.span = 'reverse'
                                         document.dispatchEvent(sessionendevent);
                                     }
                                     break;
                                 case 0: //even
-                                    if (corr[length - 1]) {
-                                        if ((corr[length - 3] == false) && (corr[length - 4] == false)) {
-                                            if (corr[length - 2]) {
-                                                promtupdate.seqlength = 'up';
-                                            } else {
-                                                document.dispatchEvent(sessionendevent);
-                                            }
-                                        } else if (corr[length - 1] || corr[length - 2]) {
-                                            promtupdate.seqlength = 'up';
-                                        } else {
-                                            //Do nothing
-                                        }
+                                    if (corr[length - 1] || corr[length - 2]) {
+                                        promptupdate.seqlength = 'up';
+                                    } else if ((corr[length - 1]) && (corr[length - 3] == false) && (corr[length - 4] == false)) {
+                                        promptupdate.span = 'reverse';
+                                        document.dispatchEvent(sessionendevent);
                                     }
                                     break;
                             }
@@ -296,6 +302,8 @@ function switchingFuncGenerator(testmode) {
                     }
                 }
                 //#endregion
+                console.log([corr, promptupdate]);
+                return promptupdate;
             }
         case "default-ramp-switch-stag": // ramp-switch with default parameters
             break;
@@ -310,16 +318,11 @@ function switchingFuncGenerator(testmode) {
 var EventFunctions = {
     forProbeFlash: function(e) {
         FlashProbe(e.target);
+        console.log(e.target.id)
     },
     forProbeClick: function(e) {
         SelectProbe(e.target);
-        if (CheckTrialFinish()) {
-            setPlayMode("off");
-        }
-    },
-    onTrialFinish: function(e) {
-        console.log("Trial Finish");
-        console.log(DynamicsContainer.currTrialData);
+        CheckFinishTrial(DynamicsContainer);
     },
     onTestFinish: function(e) {
         console.log("Test Finish");
@@ -342,7 +345,6 @@ var EventFunctions = {
         id.lname = formobj.elements['lname'].value;
         id.code = sha256(id.fname + " " + id.mname + " " + id.lname);
         id.date = time.toDateString();
-        id.timestart = time.toTimeString();
 
         document.getElementById('preparationCanvas').hidden = true;
         console.log(id);
@@ -365,7 +367,7 @@ var EventFunctions = {
         }
     },
     onPreparationStart: function(e) {
-        console.log('prep-start')
+        console.log('prep-start');
         document.getElementById('welcomeCanvas').hidden = true;
         document.getElementById('preparationCanvas').hidden = false;
     },
@@ -391,48 +393,128 @@ var EventFunctions = {
     onInstructionFinish: function(e) {
         document.getElementById('instructionCanvas').hidden = true;
         document.getElementById('testCanvas').hidden = false;
+        document.getElementById('title').innerHTML = '';
         document.dispatchEvent(eventcontrollerinitiateevent);
     },
     onEventControllerInitiation: function(e) {
+        /**
+         * Prep ECL
+         * >>EventController initiate by copy values from option section (Not implemented)
+         * >>Generate Update function
+         * >>Generate sumSensitiveContents
+         * >>Ready
+         **/
+        DynamicsContainer.EventController.switchingFunc = switchingFuncGenerator(DynamicsContainer.EventController.testmode);
+        DynamicsContainer.sumSensitiveContent = new DynamicsContainer.sumSensitiveContent(
+            DynamicsContainer.identifiers.code,
+            DynamicsContainer.identifiers.fname,
+            DynamicsContainer.identifiers.mname,
+            DynamicsContainer.identifiers.lname,
+            new Date().toDateString()
+        )
         document.dispatchEvent(teststartevent);
+    },
+    onTestStart: function(e) {
+        //Log starting time
+        let tnow = new Date().toTimeString();
+        DynamicsContainer.Timer.timeteststart = tnow;
+        DynamicsContainer.identifiers.timestart = tnow;
+        document.dispatchEvent(trialstartevent);
+    },
+    onTrialStart: function(e) {
+        //Initialization
+        var timer = DynamicsContainer.Timer;
+        var ecl = DynamicsContainer.EventController;
+
+        DynamicsContainer.currTrialData = DynamicsContainer.currentTrialData(ecl.seqlength, ecl.span);
+        resetTrialTimer(DynamicsContainer);
+        changeBackground(DynamicsContainer.currTrialData.span);
+
+        timer.timetrialstart = new Date().toTimeString();
+        timer.timeprobestart = new Date().toTimeString();
+
+        sequenceFlash(DynamicsContainer.currTrialData.sequence, DynamicsContainer.currTrialData.span, ecl.probetimeout, ecl.ISI, ecl.ISImode, log = true, toplay = true);
+        timer.timeprobeend = new Date().toTimeString();
+    },
+
+    onTrialFinish: function(e) {
+        var useTrial = DynamicsContainer.currTrialData;
+        var timer = DynamicsContainer.Timer;
+        var ecl = DynamicsContainer.EventController;
+        var container = DynamicsContainer.testContainer;
+        timer.timetrialfinish = new Date().toTimeString();
+        setPlayMode('off');
+        //Push data to testContainer 
+        container.trialData.push(DynamicsContainer.trialData(ecl.currTrial, useTrial.seqlength, useTrial.span, useTrial.sequence, useTrial.answersequence, timer.timetrialanswer, timer.timetrialstart, timer.timetrialfinish, timer.timeprobestart, timer.timeprobeend));
+        container.corrects.push(MiscOperationFunction.compareSeq(useTrial.answersequence, MiscOperationFunction.revSeq(useTrial.sequence, useTrial.span)));
+        container.spans.push(useTrial.span);
+        //Calculate updateparameter (If testend signal trigger testend)
+        var promptupdate = ecl.switchingFunc(DynamicsContainer);
+        dynamicUpdate(promptupdate);
+        document.dispatchEvent(nextrialevent);
+    },
+    toPlay: (e) => {
+        setPlayMode('on');
     }
 }
 
-function testinitializer(testmode) {
-
-
+function resetTrialTimer(DynamicsContainer) {
+    var timer = DynamicsContainer.Timer;
+    timer.timetrialstart = null;
+    timer.timeprobestart = null;
+    timer.timeprobeend = null;
+    timer.timetrialanswer = [];
+    timer.timetrialfinish = null;
 }
 
 function SelectProbe(object) {
-    _name = object.getAttribute("id");
+    let _name = object.getAttribute("id");
     //do upon being selected
-    DynamicsContainer.currTrialData.answersequence.push(_name[_name.length - 1]); //push only probe number to answer collection
+    let _num = parseInt(_name[_name.length - 1]);
+    DynamicsContainer.currTrialData.answersequence.push(_num); //push only probe number to answer collection
+    DynamicsContainer.Timer.timetrialanswer.push(new Date().toTimeString());
     console.log(DynamicsContainer.currTrialData);
     //do after selected
 }
 
-function FlashProbe(object, flashmode = "flashing-forward", timeout = defaultTimeout) {
+function FlashProbe(object, span = "forward", timeout = defaultTimeout, log = false) {
     var probeRef = object;
-    old_class = probeRef.getAttribute("class")
-    switch (flashmode) {
-        case "flashing-forward":
+    switch (span) {
+        case 'forward':
+            old_class = 'Probe';
+            break;
+        case 'backward':
+            old_class = 'Probe';
+            break;
+    }
+    switch (span) {
+        case "forward":
             probeRef.setAttribute("class", "Probe-flashing-forward")
             break;
-        case "flashing-backward":
+        case "backward":
             probeRef.setAttribute("class", "Probe-flashing-backward")
             break;
     }
+    if (log) {
+        DynamicsContainer.Timer.timetrialanswer.push(new Date().toTimeString());
+    }
     setTimeout(function() {
-        probeRef.setAttribute("class", "Probe")
+        probeRef.setAttribute("class", old_class)
     }, timeout)
 }
 
-function sequenceFlash(seq, flashmode = "flashing-forward", timeout = defaultTimeout, ISI = defaultISI, seqmode = 'const-interval') {
+function sequenceFlash(seq, span = "forward", timeout = defaultTimeout, ISI = defaultISI, seqmode = 'const-interval', log = false, toplay = false) {
     switch (seqmode) {
         case "const-interval":
-            let waittime = ISI - timeout;
-            for (let i = 0; i < seq.length; i++) {
-                setTimeout(() => { FlashProbe(document.getElementById("Probe" + seq[i]), flashmode, timeout); }, i * ISI + waittime);
+            var waittime = ISI - timeout;
+            for (var i = 0; i < seq.length; i++) {
+                let _element = document.getElementById("Probe" + seq[i]);
+                setTimeout(() => {
+                    FlashProbe(_element, span, timeout, log);
+                }, (i * ISI) + waittime);
+                if ((i == (seq.length - 1)) && toplay) {
+                    setTimeout(() => { document.dispatchEvent(sequenceflashfinish) }, (i * ISI) + waittime);
+                }
             }
             break;
     }
@@ -474,27 +556,10 @@ function genSeq(seqlength, numOption = 6) {
     return seq;
 }
 
-function playData() {
-    var playData = {
-        clickData: null, //
-        hoverData: null, //
-    };
-    return playData;
-}
 
 function CheckFinishTrial(dynamicscontainer) {
-    if (dynamicscontainer.currTrialData.seqlength == dynamicscontainer.currTrialData.sequence.length) {
-        //print("Trial end with");
-        //console.log(dynamicscontainer.currTrial);
-        return yes
-    }
-}
-
-function CheckFinishTest(dynamicscontainer) {
-    if (dynamicscontainer.currTrialData.seqlength == dynamicscontainer.currTrialData.sequence.length) {
-        //print("Trial end with")
-        //console.log(dynamicscontainer)
-        return yes
+    if (dynamicscontainer.currTrialData.seqlength == dynamicscontainer.currTrialData.answersequence.length) {
+        document.dispatchEvent(trialfinevent);
     }
 }
 
@@ -522,7 +587,7 @@ MiscOperationFunction = {
             console.assert(seq1.length == seq2.length)
             var truthValue = true;
             for (let i = 0; i < seq1.length; i++) {
-                if (seq1 != seq2) { truthValue = false }
+                if (seq1[i] != seq2[i]) { truthValue = false }
             }
             return truthValue;
         },
@@ -629,14 +694,22 @@ MiscOperationFunction = {
             return result;
         },
         revSeq: (seq, rev) => {
-            if (~rev) {
-                return seq;
-            } else if (rev) {
-                return seq.reverse();
+            var res = Array.from(seq)
+            if (rev == 'forward') {
+                return res;
+            } else if (rev == 'backward') {
+                return res.reverse();
             } else {
-                throw EvalError;
+                throw "EvalError";
             }
         },
+        sleep: function(milliseconds) {
+            const date = Date.now();
+            let currentDate = null;
+            do {
+                currentDate = Date.now();
+            } while (currentDate - date < milliseconds);
+        }
     }
     //#endregion
 

@@ -11,7 +11,7 @@
 </head>
 
 <body>
-    <title>Spatial Span Game</title>
+    <h1 id='title'>Spatial Span Game</h1>
     <main>
         <div id="welcomeCanvas" class="welcomeCanvas">
             <h1>Place holder for some description for the project</h1>
@@ -31,20 +31,26 @@
             <button onclick="document.dispatchEvent(testinitializeevent);" hidden>ShowTestCanvas</button>
         </div>
         <div id="preparationCanvas" class="preparationCanvas" hidden>
+            <h1>
+                ข้อมูลของผู้เข้าร่วมการวิจัย
+            </h1><br>
+            <h2>
+                กรุณากรอกข้อมูลให้ครบถ้วน
+            </h2><br>
             <form id="preparation-form" method="dialog" onsubmit="document.dispatchEvent(preparationsubmitevent);">
-                <label for="fname>">ชื่อจริง (First name)</label>
+                <label for="fname>">ชื่อจริง (First name)</label><br>
                 <input type="text" id='fname' name="fname" placeholder="ชื่อจริง" minlength=1 maxlength=20 pattern="^[\u0E00-\u0E4Ea-zA-Z]{1,20}$" oninput="fnameValidation(this);" oninvalid="fnameValidation(this)" required><br>
-                <label for="mname>">ชื่อกลาง (Middle name)</label>
+                <label for="mname>">ชื่อกลาง (Middle name)</label><br>
                 <input type="text" id='mname' name="mname" placeholder="ชื่อกลาง (ถ้ามี)" minlength="0" maxlength=2 pattern="^[\u0E00-\u0E4Ea-zA-Z]{0,20}$" oninput="mnameValidation(this);" oninvalid="mnameValidation(this)"><br>
-                <label for="lname>">นามสกุล (Last name)</label>
+                <label for="lname>">นามสกุล (Last name)</label><br>
                 <input type="text" id='lname' name="lname" placeholder="นามสกุล" minlength=1 maxlength=20 pattern="^[\u0E00-\u0E4Ea-zA-Z]{1,20}$" oninput="lnameValidation(this);" oninvalid="lnameValidation(this)" required><br>
-                <label for="dob">วันเกิด</label>
+                <label for="dob">วันเกิด</label><br>
                 <input type='date' id="dob" name="dob" placeholder='1997/1/1' required><br>
-                <label for="testmode" hidden>รูปแบบการทดสอบ</label>
+                <label for="testmode" hidden>รูปแบบการทดสอบ<br></label>
                 <select id='testmode' name='testmode' hidden>
                     <option value = '1-up-2-down-half-switch-stag' selected="selected">โหมดปกติ<br></option>
                 </select>
-                <label for="education">ระดับการศึกษาสูงสุด</label>
+                <label for="education">ระดับการศึกษาสูงสุด</label><br>
                 <select id='education' name='education' required>
                     <option value = 'No-participation in educational service'>ไม่ได้เข้าศึกษา</option>
                     <option value = 'Kindergarten'>อนุบาลศึกษา</option>
@@ -55,7 +61,7 @@
                     <option value= "Bachelor degree">ปริญญาตรี</option>
                     <option value= "Master degree">ปริญญาโท</option>
                     <option value= "Ph.D">ปริญญาเอก</option>
-                </select>
+                </select><br>
                 <button type="submit">ถัดไป</button>
             </form>
         </div>
@@ -97,15 +103,11 @@
             </div>
         </div>
     </main>
-    <footer>
-        <b>
-            Chulalongkorn Cognitive Clinical and Computational Neuroscience Research Unit
-        </b> est. 2020
-        <a href="https://cccnlab.github.io/ " target="_blank ">
-            visit us
-        </a>
-    </footer>
 </body>
+
+<footer>
+    Chulalongkorn Cognitive Clinical and Computational Neuroscience Research Unit est. 2020
+</footer>
 
 
 </html>
