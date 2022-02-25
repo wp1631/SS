@@ -148,6 +148,7 @@ var DynamicsContainer = {
 
         return obj;
     },
+
     sumSensitiveContent: function(code = null, fname = null, mname = null, lname = null, date = null) {
         let obj = {
             id: code || "Anonymous",
@@ -159,6 +160,7 @@ var DynamicsContainer = {
         return obj;
     }
 }
+var promptupdate = {};
 
 //#region form validity
 function fnameValidation(object) {
@@ -238,72 +240,87 @@ function switchingFuncGenerator(testmode) {
             break;
         case "1-up-2-down-half-switch-stag": // First half forward then backward with stagnation
             function res_func(dynamicscontainer) {
-                var corr = dynamicscontainer.testContainer.corrects;
-                var sp = dynamicscontainer.testContainer.spans;
-                var length = sp.length;
-                var promptupdate = {};
-                //#region span check
-                if (length > 1) {
-                    if (sp.includes('backward')) {
-                        var ll = length - sp.lastIndexOf('forward');
-                        if (ll >= 3) {
-                            if (length - ll == 21) {
-                                document.dispatchEvent(sessionendevent);
-                            } else if (length - ll < 22) {
-                                switch (ll % 2) {
-                                    case 0: //even
-                                        if (corr[length - 1] || corr[length - 2]) {
-                                            promptupdate.seqlength = 'up';
-                                        } else if ((corr[length - 3] == false) && (corr[length - 4] == false)) {
-                                            console.log('down')
-                                            promptupdate.span = 'reverse';
-                                            document.dispatchEvent(sessionendevent);
-                                            document.dispatchEvent(testfinevent);
-                                        }
-                                        break;
-                                    case 1: //odd
-                                        if (corr[length - 1] && (corr[length - 2] == false) && (corr[length - 3] == false)) {
-                                            console.log('down')
-                                            promptupdate.span = 'reverse';
-                                            document.dispatchEvent(sessionendevent);
-                                            document.dispatchEvent(testfinevent);
-                                        }
-                                        break;
+                var obj = {};
+                var container = dynamicscontainer.testContainer;
+                var corrArray = container.corrects;
+                var spanArray = container.spans;
+                //Check session of test
+                let secondhalf = spanArray.includes('backward');
+                let li = spanArray.length - 1;
+                if (secondhalf) {
+                    let l = spanArray.length - spanArray.indexOf('backward');
+                    if (l > 1) {
+                        switch (l % 2) {
+                            case 0: //even session2
+                                if (corrArray[li]) {
+                                    if ((corrArray[li - 1] === false) && (corrArray[li - 2] === false) && (corrArray[li - 3] === false)) {
+                                        //Terminate game
+                                    } else {
+                                        //Pass with span+=1
+                                        obj.seqlength = 'up';
+                                    }
+                                } else {
+                                    if (corrArray[li - 1]) {
+                                        //pass with span+=1
+                                        obj.seqlength = 'up';
+                                    } else {
+                                        //pass with stag
+                                        obj.stag = true;
+                                    }
                                 }
-                            } else {
-                                console.log("We should not be here");
-                            }
+                                break;
+                            case 1: //odd session2
+                                if (corrArray[li]) {
+                                    if ((corrArray[li - 1] === false) && (corrArray[li - 2] === false)) {
+                                        //terminate game
+                                    } else {
+                                        //pass
+                                    }
+                                } else {
+                                    //pass
+                                }
+                                break;
                         }
-                    } else {
-                        // length of forward equal to total length
-                        if (length == dynamicscontainer.EventController.maxtrial) {
-                            document.dispatchEvent(sessionendevent);
-                        } else if (length < dynamicscontainer.EventController.maxtrial + 1) {
-                            switch (length % 2) {
-                                case 1: // odd
-                                    //signal sessionend for first correct after long consecutive false
-                                    if (corr[length - 1] && (corr[length - 2] == false) && (corr[length - 3] == false)) {
-                                        promptupdate.span = 'reverse'
-                                        document.dispatchEvent(sessionendevent);
+                    }
+                } else {
+                    let l = spanArray.length;
+                    if (l > 1) {
+                        switch (l % 2) {
+                            case 0: //even session
+                                if (corrArray[li]) {
+                                    if ((corrArray[li - 1] === false) && (corrArray[li - 2] === false) && (corrArray[li - 3] === false)) {
+                                        //Terminate session + change span direction
+                                        obj.span = 'reverse';
+                                    } else {
+                                        //Pass with span+=1
+                                        obj.seqlength = 'up';
                                     }
-                                    break;
-                                case 0: //even
-                                    if (corr[length - 1] || corr[length - 2]) {
-                                        promptupdate.seqlength = 'up';
-                                    } else if ((corr[length - 1]) && (corr[length - 3] == false) && (corr[length - 4] == false)) {
-                                        promptupdate.span = 'reverse';
-                                        document.dispatchEvent(sessionendevent);
+                                } else {
+                                    if (corrArray[li - 1]) {
+                                        //pass with span+=1
+                                        obj.seqlength = 'up';
+                                    } else {
+                                        //pass with stag
+                                        obj.stag = true;
                                     }
-                                    break;
-                            }
-                        } else {
-                            console.log("We should not be here"); // Error
+                                }
+                                break;
+                            case 1: //odd session
+                                if (corrArray[li]) {
+                                    if ((corrArray[li - 1] == false) && (corrArray[li - 2] == false)) {
+                                        //terminate session chagen span direction
+                                        obj.span = 'reverse';
+                                    } else {
+                                        //pass
+                                    }
+                                } else {
+                                    //pass
+                                }
+                                break;
                         }
                     }
                 }
-                //#endregion
-                console.log([corr, promptupdate]);
-                return promptupdate;
+                return obj;
             }
         case "default-ramp-switch-stag": // ramp-switch with default parameters
             break;
@@ -425,8 +442,11 @@ var EventFunctions = {
         //Initialization
         var timer = DynamicsContainer.Timer;
         var ecl = DynamicsContainer.EventController;
-
-        DynamicsContainer.currTrialData = DynamicsContainer.currentTrialData(ecl.seqlength, ecl.span);
+        if (promptupdate.stag == true) {
+            DynamicsContainer.currTrialData.answersequence = [];
+        } else {
+            DynamicsContainer.currTrialData = DynamicsContainer.currentTrialData(ecl.seqlength, ecl.span);
+        }
         resetTrialTimer(DynamicsContainer);
         changeBackground(DynamicsContainer.currTrialData.span);
 
@@ -449,7 +469,7 @@ var EventFunctions = {
         container.corrects.push(MiscOperationFunction.compareSeq(useTrial.answersequence, MiscOperationFunction.revSeq(useTrial.sequence, useTrial.span)));
         container.spans.push(useTrial.span);
         //Calculate updateparameter (If testend signal trigger testend)
-        var promptupdate = ecl.switchingFunc(DynamicsContainer);
+        promptupdate = ecl.switchingFunc(DynamicsContainer);
         dynamicUpdate(promptupdate);
         document.dispatchEvent(nextrialevent);
     },
@@ -474,7 +494,9 @@ function SelectProbe(object) {
     DynamicsContainer.currTrialData.answersequence.push(_num); //push only probe number to answer collection
     DynamicsContainer.Timer.timetrialanswer.push(new Date().toTimeString());
     console.log(DynamicsContainer.currTrialData);
-    //do after selected
+    console.log(_num);
+    console.log([DynamicsContainer.currTrialData.answersequence, DynamicsContainer.currTrialData.sequence])
+        //do after selected
 }
 
 function FlashProbe(object, span = "forward", timeout = defaultTimeout, log = false) {
