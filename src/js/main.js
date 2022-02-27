@@ -4,7 +4,7 @@ const defaultISI = 1000;
 const defaultISImode = 'const-interval';
 
 const defaultinitialspan = 2;
-const defaultmaxtrial = 20;
+const defaultmaxtrial = 5;
 const defaulttestmode = "1-up-2-down-half-switch-stag";
 const defaultspandirection = 'forward';
 
@@ -25,7 +25,9 @@ const nextrialevent = new Event('trial-next');
 const trialfinevent = new Event('trial-finish');
 const sessionendevent = new Event('session-end');
 const testfinevent = new Event('test-finish');
-const sequenceflashfinish = new Event('sequential-flash-finish')
+const sequenceflashfinish = new Event('sequential-flash-finish');
+
+const databaseevent = new Event('database');
 
 function main() {
     document.addEventListener('consent-submit', EventFunctions.onConsentSubmit);
@@ -128,10 +130,11 @@ var DynamicsContainer = {
         return obj;
     },
 
-    sumTestData: function(code = null, trialDataArr = null, testmode = defaulttestmode, ISImode = defaultISImode, ISI = defaultISI, probetimeout = defaultTimeout, maxtrial = defaultmaxtrial, iniseqlength = defaultinitialspan, timestamp_teststart = null, timestamp_testfinish = null) {
+    sumTestData: function(code = null, identifiers = null, trialDataArr = null, testmode = defaulttestmode, ISImode = defaultISImode, ISI = defaultISI, probetimeout = defaultTimeout, maxtrial = defaultmaxtrial, iniseqlength = defaultinitialspan, timestamp_teststart = null, timestamp_testfinish = null) {
         let obj = {}
         let now = new Date();
         obj.id = code || "Anonymous";
+        obj.identifiers = identifiers || null;
         obj.date = now.toDateString();
         obj.timestamp = now.toTimeString();
         obj.testdata = {
@@ -255,6 +258,7 @@ function switchingFuncGenerator(testmode) {
                                 if (corrArray[li]) {
                                     if ((corrArray[li - 1] === false) && (corrArray[li - 2] === false) && (corrArray[li - 3] === false)) {
                                         //Terminate game
+                                        document.dispatchEvent(testfinevent);
                                     } else {
                                         //Pass with span+=1
                                         obj.seqlength = 'up';
@@ -273,6 +277,7 @@ function switchingFuncGenerator(testmode) {
                                 if (corrArray[li]) {
                                     if ((corrArray[li - 1] === false) && (corrArray[li - 2] === false)) {
                                         //terminate game
+                                        document.dispatchEvent(testfinevent);
                                     } else {
                                         //pass
                                     }
@@ -281,6 +286,9 @@ function switchingFuncGenerator(testmode) {
                                 }
                                 break;
                         }
+                    }
+                    if (l == DynamicsContainer.EventController.maxtrial) {
+                        document.dispatchEvent(testfinevent);
                     }
                 } else {
                     let l = spanArray.length;
@@ -318,6 +326,10 @@ function switchingFuncGenerator(testmode) {
                                 }
                                 break;
                         }
+                    }
+                    if (l == DynamicsContainer.EventController.maxtrial) {
+                        //First session end
+                        obj.span = 'reverse';
                     }
                 }
                 return obj;
@@ -433,7 +445,7 @@ var EventFunctions = {
     },
     onTestStart: function(e) {
         //Log starting time
-        let tnow = new Date().toTimeString();
+        let tnow = new Date().toISOString();
         DynamicsContainer.Timer.timeteststart = tnow;
         DynamicsContainer.identifiers.timestart = tnow;
         document.dispatchEvent(trialstartevent);
@@ -450,11 +462,8 @@ var EventFunctions = {
         resetTrialTimer(DynamicsContainer);
         changeBackground(DynamicsContainer.currTrialData.span);
 
-        timer.timetrialstart = new Date().toTimeString();
-        timer.timeprobestart = new Date().toTimeString();
-
+        timer.timetrialstart = new Date().toISOString();
         sequenceFlash(DynamicsContainer.currTrialData.sequence, DynamicsContainer.currTrialData.span, ecl.probetimeout, ecl.ISI, ecl.ISImode, log = true, toplay = true);
-        timer.timeprobeend = new Date().toTimeString();
     },
 
     onTrialFinish: function(e) {
@@ -462,7 +471,7 @@ var EventFunctions = {
         var timer = DynamicsContainer.Timer;
         var ecl = DynamicsContainer.EventController;
         var container = DynamicsContainer.testContainer;
-        timer.timetrialfinish = new Date().toTimeString();
+        timer.timetrialfinish = new Date().toISOString();
         setPlayMode('off');
         //Push data to testContainer 
         container.trialData.push(DynamicsContainer.trialData(ecl.currTrial, useTrial.seqlength, useTrial.span, useTrial.sequence, useTrial.answersequence, timer.timetrialanswer, timer.timetrialstart, timer.timetrialfinish, timer.timeprobestart, timer.timeprobeend));
@@ -475,14 +484,32 @@ var EventFunctions = {
     },
     toPlay: (e) => {
         setPlayMode('on');
+    },
+
+    onTestFinish: function(e) {
+        DynamicsContainer.Timer.timetestfinish = new Date().toISOString();
+        setPlayMode('off');
+        document.getElementById("testCanvas").setAttribute("hidden", true);
+        document.dispatchEvent(databaseevent);
+    },
+
+    onDBevent: function(e) {
+        var id = DynamicsContainer.identifiers;
+        var testcontainer = DynamicsContainer.testContainer;
+        var ecl = DynamicsContainer.EventController;
+        var timer = DynamicsContainer.Timer;
+        var sumData = DynamicsContainer.sumTestData(id.code, id, testcontainer.trialData, ecl.testmode, ecl.ISImode, ecl.ISI, ecl.probetimeout, ecl.maxtrial, ecl.initialseqlength, timer.timeteststart, timestamp_testfinish)
+        console.log(sumData);
+        var jsondat = JSON.stringify(sumData);
+
     }
 }
 
 function resetTrialTimer(DynamicsContainer) {
     var timer = DynamicsContainer.Timer;
     timer.timetrialstart = null;
-    timer.timeprobestart = null;
-    timer.timeprobeend = null;
+    timer.timeprobestart = [];
+    timer.timeprobeend = [];
     timer.timetrialanswer = [];
     timer.timetrialfinish = null;
 }
@@ -492,7 +519,7 @@ function SelectProbe(object) {
     //do upon being selected
     let _num = parseInt(_name[_name.length - 1]);
     DynamicsContainer.currTrialData.answersequence.push(_num); //push only probe number to answer collection
-    DynamicsContainer.Timer.timetrialanswer.push(new Date().toTimeString());
+    DynamicsContainer.Timer.timetrialanswer.push(new Date().toISOString());
     console.log(DynamicsContainer.currTrialData);
     console.log(_num);
     console.log([DynamicsContainer.currTrialData.answersequence, DynamicsContainer.currTrialData.sequence])
@@ -518,10 +545,11 @@ function FlashProbe(object, span = "forward", timeout = defaultTimeout, log = fa
             break;
     }
     if (log) {
-        DynamicsContainer.Timer.timetrialanswer.push(new Date().toTimeString());
+        DynamicsContainer.Timer.timeprobestart.push(new Date().toISOString());
     }
     setTimeout(function() {
-        probeRef.setAttribute("class", old_class)
+        probeRef.setAttribute("class", old_class);
+        DynamicsContainer.Timer.timeprobeend.push(new Date().toISOString());
     }, timeout)
 }
 
@@ -734,6 +762,101 @@ MiscOperationFunction = {
         }
     }
     //#endregion
+
+
+//#region mongoDB
+function todb(json) {
+    var client = new OkHttpClient().newBuilder().build();
+    var mediaType = MediaType.parse("application/json");
+    var body = RequestBody.create(mediaType, "{\n    \"collection\":\"TestData\",\n    \"database\":\"SpatialSpan\",\n    \"dataSource\":\"TestSS\",\n    \"projection\": {\"_id\": 1}\n\n}");
+    var request = new Request.Builder()
+        .url("https://data.mongodb-api.com/app/data-gwtex/endpoint/data/beta/action/findOne")
+        .method("POST", body)
+        .addHeader("Content-Type", "application/json")
+        .addHeader("Access-Control-Request-Headers", "*")
+        .addHeader("api-key", "<API_KEY>")
+        .build();
+    var response = client.newCall(request).execute();
+    return response;
+}
+
+async function postData(data = {}) {
+    // Default options are marked with *
+    var sendBody = {
+        dataSource: "TestSS",
+        database: 'SpatialSpan',
+        collection: 'TestData',
+        document: data,
+    };
+    const response = await fetch(url = "https://data.mongodb-api.com/app/data-gwtex/endpoint/data/beta/action/insertOne", {
+        method: 'POST',
+        mode: 'no-cors',
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Request-Headers': '*',
+            'api-key': 'ZvJXoEaySMqxFwp3lSAFgG2IzexXZLSVsQ7duvbHZAGMUaVFKF994OSnPKH0nqBm'
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify(sendBody), // body data type must match "Content-Type" header
+    });
+    return response.json(); // parses JSON response into native JavaScript objects
+}
+
+'mongodb+srv://$[username]:$[password]@$[hostlist]/$[database]?retryWrites=true'
+
+async function postData2(data = {}) {
+    // Default options are marked with *
+    var sendBody = {
+        dataSource: "TestSS",
+        database: 'SpatialSpan',
+        collection: 'TestData',
+        document: data,
+    };
+    const response = await fetch(url = "https://data.mongodb-api.com/app/data-gwtex/endpoint/data/beta/action/insertOne", {
+        method: 'POST',
+        mode: 'no-cors',
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Request-Headers': '*',
+            'api-key': 'TB9MUUP9RNcppDA8UuIMd4sorxZ44zvMMnWnHdYHJAHF9vErXUtFn8EXpj8tr0My'
+        },
+        //redirect: 'follow', // manual, *follow, error
+        //referrerPolicy: 'no-referrer',
+        body: JSON.stringify(sendBody), // body data type must match "Content-Type" header
+    });
+    return response.json(); // parses JSON response into native JavaScript objects
+}
+
+/*
+curl --request POST \
+  'https://data.mongodb-api.com/app/<Data API App ID>/endpoint/data/beta/action/insertOne' \
+  --header 'Content-Type: application/json' \
+  --header 'Access-Control-Request-Headers: *' \
+  --header 'api-key: <Data API Key>' \
+  --data-raw '{
+      "dataSource": "Cluster0",
+      "database": "todo",
+      "collection": "tasks",
+      "document": {
+        "status": "open",
+        "text": "Do the dishes"
+      }
+  }'
+*/
+/*
+postData('https://example.com/answer', { answer: 42 })
+    .then(data => {
+        console.log(data); // JSON data parsed by `data.json()` call
+    });
+*/
+//#endregion
 
 //#region sequential program
 main();
