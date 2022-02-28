@@ -4,7 +4,7 @@ const defaultISI = 1000;
 const defaultISImode = 'const-interval';
 
 const defaultinitialspan = 2;
-const defaultmaxtrial = 5;
+const defaultmaxtrial = 10;
 const defaulttestmode = "1-up-2-down-half-switch-stag";
 const defaultspandirection = 'forward';
 
