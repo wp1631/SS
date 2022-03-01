@@ -44,7 +44,7 @@
                 <label for="fname>">ชื่อจริง (First name)</label><br>
                 <input type="text" id='fname' name="fname" placeholder="ชื่อจริง" minlength=1 maxlength=20 pattern="^[\u0E00-\u0E4Ea-zA-Z]{1,20}$" oninput="fnameValidation(this);" oninvalid="fnameValidation(this)" required><br>
                 <label for="mname>">ชื่อกลาง (Middle name)</label><br>
-                <input type="text" id='mname' name="mname" placeholder="ชื่อกลาง (ถ้ามี)" minlength="0" maxlength=2 pattern="^[\u0E00-\u0E4Ea-zA-Z]{0,20}$" oninput="mnameValidation(this);" oninvalid="mnameValidation(this)"><br>
+                <input type="text" id='mname' name="mname" placeholder="ชื่อกลาง (ถ้ามี)" minlength="0" maxlength=20 pattern="^[\u0E00-\u0E4Ea-zA-Z]{0,20}$" oninput="mnameValidation(this);" oninvalid="mnameValidation(this)"><br>
                 <label for="lname>">นามสกุล (Last name)</label><br>
                 <input type="text" id='lname' name="lname" placeholder="นามสกุล" minlength=1 maxlength=20 pattern="^[\u0E00-\u0E4Ea-zA-Z]{1,20}$" oninput="lnameValidation(this);" oninvalid="lnameValidation(this)" required><br>
                 <label for="dob">วันเกิด</label><br>
@@ -55,15 +55,27 @@
                 </select>
                 <label for="education">ระดับการศึกษาสูงสุด</label><br>
                 <select id='education' name='education' required>
-                    <option value = 'No-participation in educational service'>ไม่ได้เข้าศึกษา</option>
-                    <option value = 'Kindergarten'>อนุบาลศึกษา</option>
-                    <option value = "Primary school">ประถมศึกษา</option>
-                    <option value = "Junior highschool">มัธยมศึกษาตอนต้น</option>
-                    <option value = 'Highschool'>มัธยมศึกษาตอนปลาย</option>
-                    <option value = 'diploma'>อนุปริญญา</option>
-                    <option value= "Bachelor degree">ปริญญาตรี</option>
-                    <option value= "Master degree">ปริญญาโท</option>
-                    <option value= "Ph.D">ปริญญาเอก</option>
+                    <option value = 'NON' selected>ไม่ได้เข้าศึกษา</option>
+                    <option value = 'KND'>อนุบาลศึกษา</option>
+                    <option value = "PRS">ประถมศึกษา</option>
+                    <option value = "JHS">มัธยมศึกษาตอนต้น</option>
+                    <option value = 'HIS'>มัธยมศึกษาตอนปลาย</option>
+                    <option value = 'DIP'>อนุปริญญา</option>
+                    <option value= "BAC">ปริญญาตรี</option>
+                    <option value= "MAS">ปริญญาโท</option>
+                    <option value= "DOC">ปริญญาเอก</option>
+                    <!--
+                        ('NON','No-participation in educational service'),
+                        ('KND','Kindergarten'),
+                        ('PRS','Primary school'),
+                        ('JHS','Junior highschool'),
+                        ('HIS','Highschool'),
+                        ('DIP','Diploma'),
+                        ('BAC','Bachelor degree'),
+                        ('MAS','Master degree'),
+                        ('DOC','Doctoral degree'),
+                        ('NOD','No data'),
+                    -->
                 </select><br>
                 <button type="submit">ถัดไป</button>
             </form>
