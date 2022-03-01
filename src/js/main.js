@@ -75,6 +75,7 @@ var DynamicsContainer = {
         lname: null,
         code: null,
         date: null,
+        dob: null,
         timestart: null,
     },
 
@@ -372,6 +373,7 @@ var EventFunctions = {
         id.fname = formobj.elements['fname'].value;
         id.mname = formobj.elements['mname'].value;
         id.lname = formobj.elements['lname'].value;
+        id.dob = formobj.elements['dob'].value;
         id.code = sha256(id.fname + " " + id.mname + " " + id.lname);
         id.date = time.toDateString();
 
@@ -764,98 +766,45 @@ MiscOperationFunction = {
     //#endregion
 
 
-//#region mongoDB
-function todb(json) {
-    var client = new OkHttpClient().newBuilder().build();
-    var mediaType = MediaType.parse("application/json");
-    var body = RequestBody.create(mediaType, "{\n    \"collection\":\"TestData\",\n    \"database\":\"SpatialSpan\",\n    \"dataSource\":\"TestSS\",\n    \"projection\": {\"_id\": 1}\n\n}");
-    var request = new Request.Builder()
-        .url("https://data.mongodb-api.com/app/data-gwtex/endpoint/data/beta/action/findOne")
-        .method("POST", body)
-        .addHeader("Content-Type", "application/json")
-        .addHeader("Access-Control-Request-Headers", "*")
-        .addHeader("api-key", "<API_KEY>")
-        .build();
-    var response = client.newCall(request).execute();
-    return response;
+//#region DB
+
+function postTestData(testdata) {
+    async function postData(testdata) {
+        // Default options are marked with *
+        var formobj = document.getElementById('preparation-form');
+        var sendBody = {
+            firstname: formobj.elements['fname'].value,
+            middlename: formobj.elements['mname'].value,
+            lastname: formobj.elements['lname'].value,
+            dob: formobj.elements['dob'].value,
+            education: formobj.elements['education'].value,
+            testdata: testdata,
+            code: sha256(this.firstname + "CCCN" + this.lastname)
+        };
+
+        const response = await fetch(url = "http://127.0.0.1:8000/spatialspan/", {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
+            headers: new Headers({
+                'Content-Type': 'application/json',
+            }),
+            redirect: 'follow', // manual, *follow, error
+            referrerPolicy: 'no-referrer',
+            body: JSON.stringify(sendBody) // body data type must match "Content-Type" header
+                //body: sendBody
+        });
+
+        return response; // parses JSON response into native JavaScript objects
+    }
+
+    postData(testdata)
+        .then(data => {
+            console.log(data); // JSON data parsed by `data.json()` call
+        });
+
 }
-
-async function postData(data = { "test": "test" }) {
-    var data = JSON.stringify({
-        "dataSource": "TestSS",
-        "database": "SpatialSpan",
-        "collection": "TestData",
-        "document": data
-    });
-
-    var xhr = new XMLHttpRequest();
-    xhr.withCredentials = true;
-
-    xhr.addEventListener("readystatechange", function() {
-        if (this.readyState === 4) {
-            console.log(this.responseText);
-        }
-    });
-
-    xhr.open("POST", "https://data.mongodb-api.com/app/data-gwtex/endpoint/data/beta/action/insertOne?mode=no-cors");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
-    //xhr.setRequestHeader("Access-Control-Request-Headers", "Content-Type,Authorization");
-    xhr.setRequestHeader("api-key", "TB9MUUP9RNcppDA8UuIMd4sorxZ44zvMMnWnHdYHJAHF9vErXUtFn8EXpj8tr0My");
-
-    xhr.send(data);
-}
-
-async function postData2(data = { "test": "test" }) {
-    // Default options are marked with *
-    var sendBody = {
-        dataSource: "TestSS",
-        database: 'SpatialSpan',
-        collection: 'TestData',
-        document: data
-    };
-    console.log(sendBody);
-    const response = await fetch(url = "https://data.mongodb-api.com/app/data-gwtex/endpoint/data/beta/action/insertOne", {
-        method: 'POST',
-        mode: 'no-cors',
-        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: 'same-origin', // include, *same-origin, omit
-        headers: new Headers({
-            'Content-Type': 'application/json',
-            'Access-Control-Request-Headers': '*',
-            'api-key': 'TB9MUUP9RNcppDA8UuIMd4sorxZ44zvMMnWnHdYHJAHF9vErXUtFn8EXpj8tr0My'
-        }),
-        redirect: 'follow', // manual, *follow, error
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify(sendBody) // body data type must match "Content-Type" header
-            //body: sendBody
-    });
-
-    return response.json(); // parses JSON response into native JavaScript objects
-}
-
-/*
-curl --request POST \
-  'https://data.mongodb-api.com/app/<Data API App ID>/endpoint/data/beta/action/insertOne' \
-  --header 'Content-Type: application/json' \
-  --header 'Access-Control-Request-Headers: *' \
-  --header 'api-key: <Data API Key>' \
-  --data-raw '{
-      "dataSource": "Cluster0",
-      "database": "todo",
-      "collection": "tasks",
-      "document": {
-        "status": "open",
-        "text": "Do the dishes"
-      }
-  }'
-*/
-/*
-postData('https://example.com/answer', { answer: 42 })
-    .then(data => {
-        console.log(data); // JSON data parsed by `data.json()` call
-    });
-*/
 //#endregion
 
 //#region sequential program
